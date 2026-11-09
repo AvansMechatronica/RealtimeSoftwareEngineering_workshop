@@ -34,12 +34,31 @@ dio_device dio;
 ```
 
 ## 2.1 Tasks in FreeRTOS
-Open in visual code de folder/map `<path-to-your-project>/assignments/1_assignment/1_basics_framework`.
+### Opdracht 2.1.1.
+
+  * Sluit het `NodeMCU32`board via een USB kabel aan op de computer. Sluit de `+12V in` aan met een geschikte power-adapter.
+
+  * Open in visual code de folder/map `<path-to-your-project>/assignments/1_assignment/1_basics_framework`.
+
 :::{note}
 Zie [installatie-instructies](install.md#verkrijgen-van-de-workshopbestanden) voor instructies over het installeren van de benodigde software.
 :::
 
+  * Compileer en download het programma naar de NodeMCU32 met de `Upload` knop in de menubalk onder in het scherm
+
+![image](../images/Upload.JPG)
+
+  * Let goed op de mededelingen in de terminal van `Visual Code`, hieraan kun je zien of het uploaden succesvol is verlopen.
+
+  * Als het programma correct is geüpload, zou een LED op de NodeMCU-Shield moeten gaan knipperen.
+
+  * Tevens zal er een led knipperen op het ESP32 board zelf. Dit is een z.g.n. `hartbeat` LED, welke aangeeft dat het systeem actief is. Deze hartbeat is in alle software van deze course aanwezig. Als de led niet knippert, is de ESP32 mogelijk `vastgelopen` en moet mogelijk opnieuw worden opgestart. Je kunt dit doen met de `RESET` knop op het board.
+
+  * Bestudeer de code in `src/main.c` om te begrijpen hoe de LED wordt aangestuurd en hoe de task is opgezet. Deze code moet in de volgende opdracht worden aangepast c.q. worden uitgebreid.
+
+:::{warning}
 Voeg uitsluitend code toe aan, of wijzig code in, het bestand `src/main.c`. Alle overige folders bevatten bestanden voor de systeemconfiguratie, bibliotheken, enz. Laat deze **ongewijzigd**.
+:::
 
 In de functie `StartUserTasks()` is onder andere een task gecreëerd die een LED laat knipperen. De code die door deze task wordt uitgevoerd, staat in de functie `UserTask`. Deze task wordt gemaakt en gestart met de volgende code, die gebruikmaakt van de FreeRTOS-functie `xTaskCreate`:
 
@@ -61,13 +80,23 @@ De parameters voor deze functie zijn achtereenvolgens:
 - `priority`: de prioriteit van de task. Tasks met een hogere prioriteit hebben bij het gebruik van de CPU voorrang op tasks met een lagere prioriteit. Prioriteit 0 is het laagst en prioriteit 4 het hoogst in deze practicumconfiguratie.
 - `&handle_UserTask`: het adres van de handle die `xTaskCreate` aan de aanroeper teruggeeft. Met deze handle kan later, indien nodig, naar deze task worden verwezen.
 
-### Aanwijzingen
+### Opdracht 2.1.2
+Voeg code toe voor een nieuwe (identieke) task die LED D2 laat knipperen. LED D1 blijft dus óók (ongewijzigd) knipperen
+
+#### Aanwijzingen
 
 - Declareer een variabele van het juiste type met de naam `handle_UserTask_2`.
 - Maak een functie `UserTask_2` die LED D2 laat knipperen. Deze functie wordt dus bijna een kopie van `UserTask`.
 - Voeg aan de functie `StartUserTasks()` de bijbehorende code toe om `UserTask_2` te starten.
 - Geef de nieuwe task de naam `"tsk_User_2"`.
 - Geef `UserTask_2` dezelfde prioriteit als `UserTask`; beide hebben prioriteit 0.
+
+### Opdracht 2.1.3
+Open de Terminal. Je kunt deze openen met het volgende icoon aan te klikken:
+
+![image](../images/serial_monitor_icon.png)
+
+Voor in deze Terminal het commando `tasks` uit om de status van alle actieve tasks te bekijken. Je zou nu zowel `tsk_User` als `tsk_User_2` in de lijst moeten zien, beide met prioriteit 0.
 
 ### Voorbeelden van uitvoer
 

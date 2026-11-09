@@ -118,7 +118,7 @@ void UserTask(void *pvParameters)
 	{
 		// ts_debug() is only compiled into the output path when DEBUG is defined.
 		// This keeps repetitive scheduler diagnostics out of normal builds.
-		ts_debug("> thread 1\n");
+		ts_debug("> thread 1 running\n");
 		// Turn the selected LED output on, wait, and then turn it off again.
 		dio.SetBit(ledNr);
 		dirtyDelay();

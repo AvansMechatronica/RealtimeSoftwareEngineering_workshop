@@ -11,7 +11,7 @@
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-//#include <esp_additions/freertos/task_snapshot.h>
+#include <freertos/timers.h>
 #include "system_info.h"
 #include "ts_printf.h"
 #include "command_console.h"
@@ -99,45 +99,21 @@ void PrintTasksInfo()
 	ts_printf("Name                 State  Prio  Stack\n");
 	ts_printf("----------------------------------------\n");
 
-#if defined(configENABLE_TASK_SNAPSHOT) && (configENABLE_TASK_SNAPSHOT == 1)
-	TaskSnapshot_t snapshots[kMaxTasks];
-	UBaseType_t tcbSize = 0;
-	UBaseType_t listed = uxTaskGetSnapshotAll(snapshots, kMaxTasks, &tcbSize);
-	(void)tcbSize;
-
-	for (UBaseType_t index = 0; index < listed; ++index)
-	{
-		TaskHandle_t handle = static_cast<TaskHandle_t>(snapshots[index].pxTCB);
-		eTaskState state = eTaskGetState(handle);
-		UBaseType_t highWaterMark = uxTaskGetStackHighWaterMark(handle);
-
-		ts_printf("%-20s %-6s %4u %6u\n",
-			pcTaskGetName(handle),
-			GetTaskState(state),
-			static_cast<unsigned int>(uxTaskPriorityGet(handle)),
-			static_cast<unsigned int>(highWaterMark));
-	}
-
-	if (listed < taskCount)
-	{
-		ts_printf("(truncated: %u task(s) not shown; increase kMaxTasks)\n",
-			static_cast<unsigned int>(taskCount - listed));
-	}
-#elif defined(configUSE_TRACE_FACILITY) && (configUSE_TRACE_FACILITY == 1)
+#if defined(configUSE_TRACE_FACILITY) && (configUSE_TRACE_FACILITY == 1)
+	// Trace-facility support is compiled into this FreeRTOS build, so every
+	// task can be enumerated directly via uxTaskGetSystemState().
 	TaskStatus_t tasks[kMaxTasks];
 	const UBaseType_t listed = uxTaskGetSystemState(tasks, kMaxTasks, nullptr);
 
 	for (UBaseType_t index = 0; index < listed; ++index)
 	{
 		const TaskStatus_t &status = tasks[index];
-		const eTaskState state = status.eCurrentState;
-		const UBaseType_t highWaterMark = status.usStackHighWaterMark;
 
 		ts_printf("%-20s %-6s %4u %6u\n",
 			status.pcTaskName,
-			GetTaskState(state),
+			GetTaskState(status.eCurrentState),
 			static_cast<unsigned int>(status.uxCurrentPriority),
-			static_cast<unsigned int>(highWaterMark));
+			static_cast<unsigned int>(status.usStackHighWaterMark));
 	}
 
 	if (listed < taskCount)
@@ -146,7 +122,42 @@ void PrintTasksInfo()
 			static_cast<unsigned int>(taskCount - listed));
 	}
 #else
-	ts_printf("Task diagnostics unavailable in this build (no task snapshot/trace support).\n");
+	// This FreeRTOS build is compiled without trace-facility/task-snapshot
+	// support, so uxTaskGetSystemState(), vTaskList() and uxTaskGetSnapshotAll()
+	// are declared but not linkable. Report every task handle that can be
+	// obtained directly instead.
+	UBaseType_t listed = 0;
+
+	auto printTaskRow = [&listed](TaskHandle_t handle) {
+		if (handle == nullptr)
+		{
+			return;
+		}
+
+		const eTaskState state = eTaskGetState(handle);
+		const UBaseType_t highWaterMark = uxTaskGetStackHighWaterMark(handle);
+
+		ts_printf("%-20s %-6s %4u %6u\n",
+			pcTaskGetName(handle),
+			GetTaskState(state),
+			static_cast<unsigned int>(uxTaskPriorityGet(handle)),
+			static_cast<unsigned int>(highWaterMark));
+		++listed;
+	};
+
+	printTaskRow(xTaskGetCurrentTaskHandle());
+	printTaskRow(xTimerGetTimerDaemonTaskHandle());
+	for (UBaseType_t core = 0; core < static_cast<UBaseType_t>(portNUM_PROCESSORS); ++core)
+	{
+		printTaskRow(xTaskGetIdleTaskHandleForCPU(core));
+	}
+
+	if (listed < taskCount)
+	{
+		ts_printf("(%u of %u task(s) shown; full task enumeration needs trace-facility\n"
+			" support that is not compiled into this FreeRTOS build)\n",
+			static_cast<unsigned int>(listed), static_cast<unsigned int>(taskCount));
+	}
 #endif
 }
 
