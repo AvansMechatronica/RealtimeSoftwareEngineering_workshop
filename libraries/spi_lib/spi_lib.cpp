@@ -13,7 +13,7 @@
 // system #includes
 
 #include <Arduino.h>
-#include <spi.h>
+#include <SPI.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // application #includes
