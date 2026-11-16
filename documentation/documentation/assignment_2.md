@@ -84,27 +84,9 @@ De parameters voor deze functie zijn achtereenvolgens:
 
 :::{admonition} Opdracht 2.1.2
 :class: tip
-
-Voeg code toe voor een nieuwe (identieke) task die LED D2 laat knipperen. LED D1 blijft dus óók (ongewijzigd) knipperen
-
-**Aanwijzingen**
-
-- Declareer een variabele van het juiste type met de naam `handle_UserTask_2`.
-- Maak een functie `UserTask_2` die LED D2 laat knipperen. Deze functie wordt dus bijna een kopie van `UserTask`.
-- Voeg aan de functie `StartUserTasks()` de bijbehorende code toe om `UserTask_2` te starten.
-- Geef de nieuwe task de naam `"tsk_User_2"`.
-- Geef `UserTask_2` dezelfde prioriteit als `UserTask`; beide hebben prioriteit 0.
-
-:::
-
-:::{admonition} Opdracht 2.1.3
-:class: tip
-
 Open de Terminal. Je kunt deze openen met het volgende icoon aan te klikken:
 
 ![image](../images/serial_monitor_icon.png)
-
-Voor in deze Terminal het commando `tasks` uit om de status van alle actieve tasks te bekijken. Je zou nu zowel `tsk_User` als `tsk_User_2` in de lijst moeten zien, beide met prioriteit 0.
 
 **Voorbeelden van uitvoer**
 
@@ -126,15 +108,16 @@ Available commands:
 > UserTask started
 > thread 1
 > thread 1
-> thread 2
-> thread 2
 > thread 1
-> thread 2
 ```
 
+Voer in deze Console/Terminal het commando `tasks` uit om de status van alle actieve tasks te bekijken. Je zou nu `tsk_User` in de lijst moeten  zien, met prioriteit 0.
 
 Voorbeeld van `tasks` commando:
 ```
+--- 11 tasks executing ---
+Name                 State  Prio  Stack
+----------------------------------------
 CommandConsole       RUN       1   1328
 IDLE0                READY     0    576
 tsk_User             READY     0     88
@@ -146,8 +129,29 @@ Tmr Svc              BLOCK     1   3596
 ipc1                 SUSP     24    480
 tsk_Printf           BLOCK    23    700
 ipc0                 SUSP     24    484
-tsk_User_2           READY     1     88
 ```
+
+:::
+
+
+:::{admonition} Opdracht 2.1.3
+:class: tip
+
+Voeg code toe voor een nieuwe (identieke) task die LED D2 laat knipperen. LED D1 blijft dus óók (ongewijzigd) knipperen
+
+**Aanwijzingen**
+
+- Declareer een variabele van het juiste type met de naam `handle_UserTask_2`.
+- Maak een functie `UserTask_2` die LED D2 laat knipperen. Deze functie wordt dus bijna een kopie van `UserTask`.
+- Voeg aan de functie `StartUserTasks()` de bijbehorende code toe om `UserTask_2` te starten.
+- Geef de nieuwe task de naam `"tsk_User_2"`.
+- Geef `UserTask_2` dezelfde prioriteit als `UserTask`; beide hebben prioriteit 0.
+
+:::
+
+:::{admonition} Opdracht 2.1.4
+:class: tip
+Voer in deze Terminal het commando `tasks` uit om de status van alle actieve tasks te bekijken. Je zou nu zowel `tsk_User` als `tsk_User_2` in de lijst moeten zien, beide met prioriteit 0.
 
 :::
 ## 2.2 Task priorities in FreeRTOS
