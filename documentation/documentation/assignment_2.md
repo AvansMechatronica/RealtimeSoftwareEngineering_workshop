@@ -80,16 +80,21 @@ De parameters voor deze functie zijn achtereenvolgens:
 - `priority`: de prioriteit van de task. Tasks met een hogere prioriteit hebben bij het gebruik van de CPU voorrang op tasks met een lagere prioriteit. Prioriteit 0 is het laagst en prioriteit 4 het hoogst in deze practicumconfiguratie.
 - `&handle_UserTask`: het adres van de handle die `xTaskCreate` aan de aanroeper teruggeeft. Met deze handle kan later, indien nodig, naar deze task worden verwezen.
 
-### Opdracht 2.1.2
+
+:::{admonition} Opdracht 2.1.2
+:class: tip
 Voeg code toe voor een nieuwe (identieke) task die LED D2 laat knipperen. LED D1 blijft dus óók (ongewijzigd) knipperen
 
-#### Aanwijzingen
+*Aanwijzingen*
 
 - Declareer een variabele van het juiste type met de naam `handle_UserTask_2`.
 - Maak een functie `UserTask_2` die LED D2 laat knipperen. Deze functie wordt dus bijna een kopie van `UserTask`.
 - Voeg aan de functie `StartUserTasks()` de bijbehorende code toe om `UserTask_2` te starten.
 - Geef de nieuwe task de naam `"tsk_User_2"`.
 - Geef `UserTask_2` dezelfde prioriteit als `UserTask`; beide hebben prioriteit 0.
+
+:::
+
 
 ### Opdracht 2.1.3
 Open de Terminal. Je kunt deze openen met het volgende icoon aan te klikken:
