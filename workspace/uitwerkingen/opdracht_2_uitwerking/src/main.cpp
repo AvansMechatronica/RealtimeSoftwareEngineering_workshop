@@ -34,6 +34,7 @@
 // to NULL makes it clear that the task does not exist before setup starts it.
 
 xTaskHandle handle_UserTask		= NULL;
+xTaskHandle handle_UserTask_2	= NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Function prototypes
@@ -44,9 +45,13 @@ xTaskHandle handle_UserTask		= NULL;
 
 void HartbeatTask(void *pvParameters);
 void UserTask(void *pvParameters);
+void UserTask_2(void *pvParameters);
 
 void StartHartbeatTask(void);
 void StartUserTasks(void);
+void StartUserTask_2(void);
+
+dio_device dio;
 
 void dirtyDelay(void);
 
@@ -74,6 +79,21 @@ void StartUserTasks(void)
 	}
 	// When creation fails, the task handle remains NULL. There is currently no
 	// recovery action here, so the application continues without UserTask.
+}
+
+void StartUserTask_2(void)
+{
+	BaseType_t result = pdFAIL;
+	uint8_t priority = 0;
+
+	result = xTaskCreate(UserTask_2, "tsk_User_2", (configMINIMAL_STACK_SIZE), NULL, priority, &handle_UserTask_2);
+	if (result == pdPASS )
+	{
+		// The task was created successfully. The scheduler will call UserTask_2
+		// when the task receives processor time.
+	}
+	// When creation fails, the task handle remains NULL. There is currently no
+	// recovery action here, so the application continues without UserTask_2.
 }
 
 // dirtyDelay
@@ -108,9 +128,6 @@ void dirtyDelay(void)
 
 void UserTask(void *pvParameters)
 {
-	dio_device dio;
-	// Initialize the DIO hardware before accessing the digital output, LED's are connected to it.
-	dio.Init();
 
 	// Report that the task has started. This message uses the normal output
 	// function and is therefore independent of the DEBUG build switch.
@@ -122,12 +139,12 @@ void UserTask(void *pvParameters)
 	{
 		// ts_debug() is only compiled into the output path when DEBUG is defined.
 		// This keeps repetitive scheduler diagnostics out of normal builds.
-		ts_debug("> thread 1\n");
+		ts_printf("> thread 1\n");
 		// Turn the selected LED output on, wait, and then turn it off again.
 		dio.SetBit(ledNr);
 		dirtyDelay();
 		dio.ClearBit(ledNr);
-		dirtyDelay();
+		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 	
 	// The loop is intentionally infinite, so this line is normally unreachable.
@@ -136,6 +153,32 @@ void UserTask(void *pvParameters)
 	vTaskDelete(NULL);
 }
 
+void UserTask_2(void *pvParameters)
+{
+
+	// Report that the task has started. This message uses the normal output
+	// function and is therefore independent of the DEBUG build switch.
+	ts_printf("> UserTask_2 started\n");
+
+	uint8_t ledNr = 1;
+	
+	while (true)
+	{
+		// ts_debug() is only compiled into the output path when DEBUG is defined.
+		// This keeps repetitive scheduler diagnostics out of normal builds.
+		ts_printf("> thread 2\n");
+		// Turn the selected LED output on, wait, and then turn it off again.
+		dio.SetBit(ledNr);
+		dirtyDelay();
+		dio.ClearBit(ledNr);
+		vTaskDelay(pdMS_TO_TICKS(500));
+	}
+	
+	// The loop is intentionally infinite, so this line is normally unreachable.
+	// It remains as the correct cleanup operation if the loop is later changed
+	// to terminate or the task receives an explicit exit condition.
+	vTaskDelete(NULL);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -152,6 +195,9 @@ void setup (void)
 	Serial.begin(115200);
 	delay(1000);
 	Serial.println("System initializing");
+
+	dio.Init();
+
 	// Start the task used by ts_printf and ts_debug for serialized output.
 	StartTsPrintfTask(NULL);
 
@@ -165,6 +211,7 @@ void setup (void)
 
 	// Start the application task that controls the DIO output.
 	StartUserTasks();
+	StartUserTask_2();
 	
 	// Start the interactive command console after the shared services exist.
 	StartCommandConsoleTask(NULL);
