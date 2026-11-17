@@ -65,3 +65,77 @@ git clone https://github.com/<jouw_account_naam>/RealtimeSoftwareEngineering_wor
 :::{warning}
 Plaats de bestanden niet in een `OneDrive`-map. Dit kan compileerproblemen veroorzaken.
 :::
+
+## Testen van de installatie
+  * Sluit het `NodeMCU32`board of een ESP32-devkit-v1 via een USB kabel aan op de computer. Sluit de `+12V in` aan met een geschikte power-adapter(ingeval van NodeMCU32).
+
+  * Open in visual code de folder/map `<path-to-your-project>/workspace/examples/installatie_validatie`.
+
+:::{note}
+
+
+  * Compileer en download het programma naar de NodeMCU32 of ESP32-devkit-v1 met de `Upload` knop in de menubalk onder in het scherm
+
+![image](../images/Upload.JPG)
+
+  * Let goed op de mededelingen in de terminal van `Visual Code`, hieraan kun je zien of het uploaden succesvol is verlopen.
+
+  * Als het programma correct is geüpload, zou een LED op de ESP32-board moeten gaan knipperen. Dit is een z.g.n. `hartbeat` LED, welke aangeeft dat het systeem actief is. Deze hartbeat is in alle software van deze course aanwezig. Als de led niet knippert, is de ESP32 mogelijk `vastgelopen` en moet mogelijk opnieuw worden opgestart. Je kunt dit doen met de `RESET` knop op het board.
+
+## Gebruik van de monitor & terminal/console
+Via een terminal of console kun je de status van het programma volgen.
+
+Open de Terminal. Je kunt deze openen met het volgende icoon aan te klikken:
+
+![image](../images/serial_monitor_icon.png)
+
+**Voorbeelden van uitvoer**
+
+Voorbeeld van de programma-uitvoer in Console/Terminal:
+
+*Figuur 1. Console/Terminal terminal window*
+
+```
+System initializing
+> Heartbeat should be running, flashing onboard LED, pin 2...
+FreeRTOS command server
+Available commands:
+  version    Show firmware information
+  cpuinfo    Show ESP32 CPU/chip information
+  memory     Show ESP32 heap memory information
+  tasks      Show current task snapshot
+  help       Show this help
+  echo       Echo text, for example: echo hello
+
+```
+
+Tevens kun je nog informatie over de draaiende processen op de ESP32 opvragen d.m.v diverse commado's.
+
+| commando | doel                               |
+|----------|------------------------------------|
+| version  | Show firmware information          |
+| cpuinfo  | Show ESP32 CPU/chip information    |
+| memory   | Show ESP32 heap memory information |
+| tasks    | Show current task snapshot         |
+| help     | Show this help                     |
+| echo     | Echo text, for example: echo hello |
+
+Voer als voorbeeld in de Console/Terminal het commando `tasks` uit om de status van alle actieve tasks te bekijken. Je zou nu `tsk_User` in de lijst moeten  zien, met prioriteit 0.
+
+Voorbeeld van `tasks` commando:
+```
+--- 10 tasks executing ---
+Name                 State  Prio  Stack
+----------------------------------------
+CommandConsole       RUN       1   1328
+IDLE0                READY     0    576
+IDLE1                READY     0    568
+loopTask             BLOCK     1   7244
+tsk_Heartbeat        BLOCK     1    860
+esp_timer            SUSP     22   8160
+Tmr Svc              BLOCK     1   3596
+ipc1                 SUSP     24    480
+tsk_Printf           BLOCK    23    700
+ipc0                 SUSP     24    484
+```
+
