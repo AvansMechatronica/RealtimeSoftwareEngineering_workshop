@@ -71,9 +71,6 @@ Plaats de bestanden niet in een `OneDrive`-map. Dit kan compileerproblemen veroo
 
   * Open in visual code de folder/map `<path-to-your-project>/workspace/examples/installatie_validatie`.
 
-:::{note}
-
-
   * Compileer en download het programma naar de NodeMCU32 of ESP32-devkit-v1 met de `Upload` knop in de menubalk onder in het scherm
 
 ![image](../images/Upload.JPG)
@@ -81,6 +78,32 @@ Plaats de bestanden niet in een `OneDrive`-map. Dit kan compileerproblemen veroo
   * Let goed op de mededelingen in de terminal van `Visual Code`, hieraan kun je zien of het uploaden succesvol is verlopen.
 
   * Als het programma correct is geüpload, zou een LED op de ESP32-board moeten gaan knipperen. Dit is een z.g.n. `hartbeat` LED, welke aangeeft dat het systeem actief is. Deze hartbeat is in alle software van deze course aanwezig. Als de led niet knippert, is de ESP32 mogelijk `vastgelopen` en moet mogelijk opnieuw worden opgestart. Je kunt dit doen met de `RESET` knop op het board.
+
+:::{attention}
+Als in de Terminal een vergelijkbare melding verschijnt, zoals hieronder, dan is er een versieconflict is tussen Platformio en de geïnstalleerde ESP32 toolchain
+```
+IncompatiblePlatform: Development platform 'espressif32' is not compatible with
+PlatformIO Core v6.2.0-post.1 and depends on PlatformIO Core >=6.2.0.
+```
+
+Volg dan de volgendeinstructies om het conflict op te lossen:
+* Open een termenil met de sneltoets `Ctrl+` ` of via het menu `Terminal` -> `New Terminal` in Visual Studio Code.
+* Voer het volgende commando uit om de ESP32 toolchain te updaten:
+
+```powershell
+& "$env:USERPROFILE\.platformio\penv\Scripts\python.exe" -m pip install --force-reinstall --no-cache-dir --no-deps platformio==6.2.0
+```
+
+Controleer of het probleem is opgelost:
+
+```powershell
+& "$env:USERPROFILE\.platformio\penv\Scripts\pio.exe" --version
+# Expect: PlatformIO Core, version 6.2.0  (no ".post1" suffix)
+```
+
+Compileer en upload vervolgens het programma opnieuw naar de ESP32 om te controleren of het conflict is opgelost.
+:::
+
 
 ## Gebruik van de monitor & terminal/console
 Via een terminal of console kun je de status van het programma volgen.
