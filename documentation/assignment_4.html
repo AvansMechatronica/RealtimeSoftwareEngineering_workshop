@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Opdracht 4: Producers, consumers en queues in FreeRTOS &mdash; Realtime Software Engineering Workshop 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+      <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="next" title="Opdracht 5: Interrupts in FreeRTOS" href="assignment_5.html" />
+    <link rel="prev" title="Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS" href="assignment_3.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Realtime Software Engineering Workshop
+              <img src="../_static/avans-hogeschool-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node_mcu.html">Systeemoverzicht NodeMCU-shield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Visual Studio Code en PlatformIO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_1.html">Opdracht 1: Installatie van de software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_2.html">Opdracht 2: Tasks en priorities in FreeRTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_3.html">Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Opdracht 4: Producers, consumers en queues in FreeRTOS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#producers-consumers-en-queues">4.1 Producers, consumers en queues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#genereren-van-een-analoog-signaal-met-een-dac">4.2 Genereren van een analoog signaal met een DAC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nauwkeurige-positiebepaling-met-een-quadratuur-encoder">4.3 Nauwkeurige positiebepaling met een quadratuur-encoder</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_5.html">Opdracht 5: Interrupts in FreeRTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_6.html">Opdracht 6:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libraries.html">Softwarebibliotheken</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Voorbeeldprogramma’s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Veelgestelde vragen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teacher_manual.html">Docentenhandleiding</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Realtime Software Engineering Workshop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Opdracht 4: Producers, consumers en queues in FreeRTOS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/assignment_4.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="opdracht-4-producers-consumers-en-queues-in-freertos">
+<h1>Opdracht 4: Producers, consumers en queues in FreeRTOS<a class="headerlink" href="#opdracht-4-producers-consumers-en-queues-in-freertos" title="Link to this heading"></a></h1>
+<p>In dit practicum komt het volgende FreeRTOS-onderwerp aan bod:</p>
+<ul class="simple">
+<li><p>Het gebruik van queues voor communicatie tussen tasks</p></li>
+</ul>
+<p>Daarnaast komen vanwege de toepassing in projecten in combinatie met FreeRTOS ook de volgende twee onderwerpen aan bod:</p>
+<ul class="simple">
+<li><p>Het genereren van analoge signalen met een digitaal-analoogconverter (DAC)</p></li>
+<li><p>Het bepalen van posities met een quadratuur-encoder</p></li>
+</ul>
+<section id="producers-consumers-en-queues">
+<span id="41-producers-consumers-en-queues"></span><h2>4.1 Producers, consumers en queues<a class="headerlink" href="#producers-consumers-en-queues" title="Link to this heading"></a></h2>
+<p>In voorgaande practica werd data tussen tasks uitgewisseld met globale variabelen, of werd een gemeenschappelijke globale variabele door twee of meer tasks gewijzigd. Iedere task kan een globale variabele lezen en/of schrijven. Dat betekent dat de toegang tot zo’n variabele altijd moet worden afgeschermd met bijvoorbeeld een mutex. Een groot nadeel, of beter gezegd probleem, is dat elke variabele door alle tasks kan worden gewijzigd.</p>
+<p>Uitwisseling van data tussen tasks in FreeRTOS kan efficiënter en veiliger worden geïmplementeerd met zogenoemde queues (wachtrijen). Aan een queue kan data worden toegevoegd door een zogenoemde <em>producer</em> (producent van data). De data wacht vervolgens in de queue op verwerking door een zogenoemde <em>consumer</em> (gebruiker van data).</p>
+<p>In dit practicum is de producer een task die de ADC uitleest en de ADC-meetwaarden in een queue zet. De consumer is een task die wacht totdat er een vooraf vastgesteld aantal meetwaarden in de queue staat en vervolgens het gemiddelde van die meetwaarden bepaalt.</p>
+<p>Daarnaast wordt een task gemaakt die de queue monitort en continu laat zien hoeveel data, in dit geval ADC-meetwaarden, in de queue staat.</p>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/4_1_queue_framework</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Waarschuwing</p>
+<p>Voeg uitsluitend code toe aan, of wijzig code in, het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code>. Alle overige folders bevatten bestanden voor de systeemconfiguratie en bibliotheken. Laat deze <strong>ongewijzigd</strong>.</p>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 4.1.1</p>
+<ul class="simple">
+<li><p>Declareer een globale handle van het type <code class="docutils literal notranslate"><span class="pre">QueueHandle_t</span></code> met de naam <code class="docutils literal notranslate"><span class="pre">handle_Queue</span></code>.</p></li>
+<li><p>Maak hiermee een queue met de functie <code class="docutils literal notranslate"><span class="pre">xQueueCreate()</span></code> in de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code>. In deze queue worden de meetwaarden van de ADC opgeslagen. Deze meetwaarden zijn spanningen in volt van het type <code class="docutils literal notranslate"><span class="pre">double</span></code>, zoals teruggegeven door <code class="docutils literal notranslate"><span class="pre">adc.ReadVoltage()</span></code>.
+Het aantal elementen in de queue (de “grootte”) staat in de variabele <code class="docutils literal notranslate"><span class="pre">queueSize</span></code> en is 5. De grootte van elk element in deze queue, uitgedrukt in het aantal bytes, kan compile-time worden uitgerekend met de <code class="docutils literal notranslate"><span class="pre">sizeof</span></code>-operator. Zo geeft <code class="docutils literal notranslate"><span class="pre">sizeof(double)</span></code> als resultaat het aantal bytes in een variabele van het type <code class="docutils literal notranslate"><span class="pre">double</span></code> (op de ESP32 is dat 8).</p></li>
+<li><p>Voeg aan de task <code class="docutils literal notranslate"><span class="pre">TaskProducer</span></code> de volgende oneindige herhaling toe:</p>
+<ul>
+<li><p>Meet de spanning van ADC-kanaal 4 (potmeter RV1/P0) met <code class="docutils literal notranslate"><span class="pre">adc.ReadVoltage()</span></code>.</p></li>
+<li><p>Bepaal of de queue vol is. Gebruik hiervoor de functie <code class="docutils literal notranslate"><span class="pre">uxQueueSpacesAvailable</span></code>. Geef een melding in de Terminal als de queue vol is.</p></li>
+<li><p>Zet de gemeten waarde in de queue. Gebruik hiervoor de functie <code class="docutils literal notranslate"><span class="pre">xQueueSend</span></code>. Als de queue vol is, blijft <code class="docutils literal notranslate"><span class="pre">xQueueSend</span></code> wachten (indien nodig oneindig lang, met <code class="docutils literal notranslate"><span class="pre">portMAX_DELAY</span></code>) totdat er weer plaats is, waardoor deze waarde uiteindelijk toch in de queue wordt gezet.</p></li>
+<li><p>Wacht vervolgens een halve seconde (500 ms).</p></li>
+</ul>
+</li>
+<li><p>Voeg aan de task <code class="docutils literal notranslate"><span class="pre">TaskConsumer</span></code> de volgende oneindige herhaling toe:</p>
+<ul>
+<li><p>Wacht totdat de queue <code class="docutils literal notranslate"><span class="pre">nrOfSamples</span></code> (= 5) meetwaarden bevat. Gebruik hiervoor de functie <code class="docutils literal notranslate"><span class="pre">uxQueueMessagesWaiting</span></code>. Dit is alleen ter illustratie: deze constructie is niet erg efficiënt, omdat er actief wordt gewacht. Zorg er wel voor dat de task tijdens het wachten met <code class="docutils literal notranslate"><span class="pre">vTaskDelay</span></code> de CPU vrijgeeft.</p></li>
+<li><p>Zodra deze 5 meetwaarden beschikbaar zijn: lees ze met <code class="docutils literal notranslate"><span class="pre">xQueueReceive</span></code> uit de queue, bereken het gemiddelde en laat het resultaat in de Terminal zien.</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>Om regelmatig weer te geven hoeveel elementen in de queue staan, wordt een monitor-task toegevoegd die elke 200 ms het aantal elementen in de Terminal weergeeft. Deze task wijzigt de inhoud van de queue dus niet, maar geeft uitsluitend de status weer.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 4.1.2</p>
+<p>Breid de code in de functie <code class="docutils literal notranslate"><span class="pre">TaskMonitor</span></code> zodanig uit dat elke 200 ms het aantal elementen in de queue wordt weergegeven. Gebruik hiervoor de functie <code class="docutils literal notranslate"><span class="pre">uxQueueMessagesWaiting</span></code>.</p>
+</div>
+<p>In bovenstaande opdracht raakt de queue nét vol: zodra de producer vijf meetwaarden in de queue heeft gezet, leest de consumer deze weer uit. De queue is dus weer leeg als de volgende meetwaarde beschikbaar komt.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 4.1.3</p>
+<p>Wijzig de code in ofwel de consumer-task, ofwel de producer-task zodanig dat de queue vol raakt en de bijbehorende melding van de producer-task in de Terminal verschijnt. Controleer ook of de monitor-task laat zien dat de queue dan het maximale aantal elementen bevat.</p>
+</div>
+</section>
+<section id="genereren-van-een-analoog-signaal-met-een-dac">
+<span id="42-genereren-van-een-analoog-signaal-met-een-dac"></span><h2>4.2 Genereren van een analoog signaal met een DAC<a class="headerlink" href="#genereren-van-een-analoog-signaal-met-een-dac" title="Link to this heading"></a></h2>
+<p>Analoge signalen in een mechatronisch regelsysteem, bijvoorbeeld voor de aansturing van een motor, worden gemaakt met een digitaal-analoogconverter (DAC). Het NodeMCU-Shield bevat vier analoge uitgangskanalen, waarvan de spanning instelbaar is tussen -10 volt en +10 volt. Deze spanning wordt gegenereerd door twee 12-bits DAC’s (MCP4922, elk met twee kanalen) met bijbehorende uitgangsversterkers, zie figuur 1.</p>
+<p><img alt="DAC" src="../_images/dac_blokschema.png" /></p>
+<p><em>Figuur 1. Digitaal-analoogconverter (DAC)</em></p>
+<p>De relatie tussen de digitale 12-bits ingangswaarde <span class="math notranslate nohighlight">\(N\)</span> van de DAC en de uitgangsspanning <span class="math notranslate nohighlight">\(V_{out}\)</span> wordt gegeven door:</p>
+<div class="math notranslate nohighlight">
+\[V_{out} = -10 + \frac{N}{4096} \cdot 20\ \mathrm{V}, \qquad 0 \leq N \leq 4095\]</div>
+<p>De minimale uitgangsspanning is -10,000 volt voor <span class="math notranslate nohighlight">\(N = 0\)</span>. De maximale uitgangsspanning is 9,995 volt voor <span class="math notranslate nohighlight">\(N = 4095\)</span>, dus net geen +10 volt. Voor <span class="math notranslate nohighlight">\(N = 2048\)</span> is de uitgangsspanning uiteraard 0 volt. In de <a class="reference internal" href="libraries/dac_4922_lib.html"><span class="std std-doc">DAC-bibliotheek</span></a> zijn deze grenzen beschikbaar als <code class="docutils literal notranslate"><span class="pre">DAC_MIN_VOLTAGE</span></code> en <code class="docutils literal notranslate"><span class="pre">DAC_MAX_VOLTAGE</span></code>.</p>
+<p>In de volgende opdracht wordt de DAC aangestuurd om een analoge golfvorm te maken op DAC-kanaal 0. De uitgangsspanning van DAC-kanaal 0 (<code class="docutils literal notranslate"><span class="pre">VOUT0</span></code>) is beschikbaar op de DE9-connector <code class="docutils literal notranslate"><span class="pre">J5</span></code> van het NodeMCU-Shield (zie het <a class="reference download internal" download="" href="../_downloads/e55f678aba168722c6f5aa58c83b1b1a/NodeMCU32SPlatform_v2.pdf"><span class="xref download myst">schema</span></a>). Sluit hierop een oscilloscoop aan om het signaal te bekijken.</p>
+<div class="admonition note">
+<p class="admonition-title">Notitie</p>
+<p>De DAC heeft een settling time van enkele microseconden en de uitgangsversterker heeft een eindige slew rate. Opeenvolgende DAC-waarden mogen daarom niet te snel achter elkaar naar de DAC worden gestuurd; anders worden ze niet correct omgezet naar de bijbehorende analoge uitgangsspanning. Gebruik tussen twee stappen bijvoorbeeld <code class="docutils literal notranslate"><span class="pre">vTaskDelay(pdMS_TO_TICKS(1))</span></code>. De Arduino-functie <code class="docutils literal notranslate"><span class="pre">delayMicroseconds()</span></code> kan ook, maar maakt <strong>geen</strong> gebruik van de FreeRTOS-scheduler: de task blijft dan actief wachten en geeft de CPU niet vrij.</p>
+</div>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/4_2_dac_framework</span></code>.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 4.2.1</p>
+<ul>
+<li><p>Maak gebruik van de voorgedefinieerde functie <code class="docutils literal notranslate"><span class="pre">TaskDAC</span></code>.</p></li>
+<li><p>Sluit een oscilloscoop aan op de uitgang van DAC-kanaal 0 om het DAC-signaal te bekijken.</p></li>
+<li><p>Implementeer in de functie <code class="docutils literal notranslate"><span class="pre">TaskDAC</span></code> de volgende oneindige herhaling voor DAC-kanaal 0:</p>
+<ul class="simple">
+<li><p>Verhoog stapsgewijs de uitgangsspanning van -10 volt tot het maximum van +10 volt.</p></li>
+<li><p>Verlaag daarna stapsgewijs de uitgangsspanning van +10 volt weer naar -10 volt.</p></li>
+</ul>
+<p>Maak hierbij gebruik van de voorgedefinieerde variabele <code class="docutils literal notranslate"><span class="pre">stepSize</span></code>; deze bevat de stapgrootte in volt. Dit resulteert in een driehoekvormige uitgangsspanning. Experimenteer eventueel ook met andere signalen, bijvoorbeeld een blokgolf of een zaagtand.</p>
+</li>
+</ul>
+<p><strong>Aanwijzingen</strong></p>
+<ul class="simple">
+<li><p>Het eenvoudigst is het gebruik van de member-functie <code class="docutils literal notranslate"><span class="pre">dac.SetOutputVoltage(dacChannel,</span> <span class="pre">voltage)</span></code>. Deze heeft als parameters het DAC-kanaalnummer en de gewenste uitgangsspanning.</p></li>
+<li><p>Voor de liefhebbers: er mag ook gebruik worden gemaakt van de member-functie <code class="docutils literal notranslate"><span class="pre">dac.Write(dacChannel,</span> <span class="pre">N)</span></code>, met als parameters het kanaalnummer en de 12-bits DAC-waarde <span class="math notranslate nohighlight">\(N\)</span>.</p></li>
+</ul>
+</div>
+</section>
+<section id="nauwkeurige-positiebepaling-met-een-quadratuur-encoder">
+<span id="43-nauwkeurige-positiebepaling-met-een-quadratuur-encoder"></span><h2>4.3 Nauwkeurige positiebepaling met een quadratuur-encoder<a class="headerlink" href="#nauwkeurige-positiebepaling-met-een-quadratuur-encoder" title="Link to this heading"></a></h2>
+<p>Voor het bepalen van posities bij bewegende mechatronische systemen wordt vaak gebruikgemaakt van zogenoemde quadratuur-encoders of positieopnemers. Deze encoders genereren tijdens een beweging twee digitale signalen. De onderlinge fase van deze signalen geeft de draai- of bewegingsrichting aan, bijvoorbeeld linksom of rechtsom, zie figuur 2.</p>
+<p>De positie van een as of opnemer wordt weergegeven door de waarde van een teller. Afhankelijk van de draai- of bewegingsrichting wordt de teller met één verhoogd of verlaagd. Nauwkeurige hoek- en positiebepaling is mogelijk; typische waarden zijn bijvoorbeeld 5.000 counts per omwenteling.</p>
+<p><img alt="Quadratuursignalen" src="../_images/quadratuur_signalen.png" /></p>
+<p><em>Figuur 2. Quadratuursignalen (bron: <a class="reference external" href="https://www.dynapar.com/technology/encoder_basics/quadrature_encoder/">Dynapar: Quadrature Encoder Basics</a>)</em></p>
+<p>Daarnaast levert een quadratuur-encoder meestal nog een zogenoemd indexsignaal, dat een specifieke positie markeert, bijvoorbeeld bij een volledige rotatie of bij het bereiken van een referentiepositie.</p>
+<p>Het optellen en aftellen van deze quadratuursignalen wordt volledig in hardware uitgevoerd met specifieke IC’s: op het NodeMCU-Shield zijn dat twee LS7366R-quadratuurtellers. De processor heeft hier geen bemoeienis mee. De software in FreeRTOS kan zich daarom beperken tot het eenmalig configureren en op geschikte momenten uitlezen van de waarden van de teller. Het moment van uitlezen wordt bepaald door de applicatie. Omdat het tellen in hardware gebeurt, worden er nooit counts gemist. Zie ook de <a class="reference internal" href="libraries/qc_7366_lib.html"><span class="std std-doc">QC-bibliotheek</span></a>.</p>
+<p>Omdat quadratuur-encoders meestal mechanisch aan een opstelling zijn gekoppeld, wordt in het practicum gebruikgemaakt van een quadratuur-interface. Hierbij wordt de encoder gesimuleerd met een draaiknop die de quadratuursignalen A en B genereert. Het indexsignaal wordt gegenereerd door de draaiknop in te drukken. Deze interface kan daarnaast ook worden gebruikt om rechtstreeks een quadratuur-encoder aan te sluiten.</p>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/4_3_quadrature_framework</span></code>.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 4.3.1</p>
+<ul class="simple">
+<li><p>Sluit de quadratuur-interface met de bijbehorende kabel aan op de encoderconnector <code class="docutils literal notranslate"><span class="pre">J7</span></code> van het NodeMCU-Shield. Laat alle jumpers op de quadratuur-interface ongewijzigd. De groene LED op de quadratuur-interface gaat aan als de interface spanning heeft.</p></li>
+<li><p>Maak gebruik van de voorgedefinieerde functie <code class="docutils literal notranslate"><span class="pre">TaskQuadrature</span></code>.</p></li>
+<li><p>Het NodeMCU-Shield beschikt over twee onafhankelijke quadratuurkanalen (kanaal 0 en kanaal 1). Bij gebruik van de quadratuur-interface voor simulatie van de signalen krijgen BEIDE kanalen tegelijkertijd dezelfde A-, B- en INDEX-signalen aangeboden.</p></li>
+<li><p>Voeg code toe aan <code class="docutils literal notranslate"><span class="pre">TaskQuadrature</span></code>, zodat deze task elke seconde de tellerstand van het quadratuurkanaal <code class="docutils literal notranslate"><span class="pre">qcChannel</span></code> weergeeft:</p>
+<ul>
+<li><p>Schrijf eenmalig de gegeven <code class="docutils literal notranslate"><span class="pre">mode</span></code> naar mode-register 0 van het gekozen kanaal met <code class="docutils literal notranslate"><span class="pre">qc.WriteModeRegister(qcChannel,</span> <span class="pre">QC_MODE_REGISTER_0,</span> <span class="pre">mode)</span></code>.</p></li>
+<li><p>Gebruik daarna eenmalig de functie <code class="docutils literal notranslate"><span class="pre">qc.EnableCounter</span></code> om het gewenste quadratuurkanaal te enablen. Er is ook een functie <code class="docutils literal notranslate"><span class="pre">qc.DisableCounter</span></code> om dat kanaal weer (tijdelijk) te disablen.</p></li>
+<li><p>Gebruik de functie <code class="docutils literal notranslate"><span class="pre">qc.ReadCountRegister</span></code> om elke seconde de tellerstand van het gewenste kanaal op te vragen.</p></li>
+<li><p>Draai aan de knop (linksom/rechtsom) en bepaal wat er gebeurt met de waarde van de teller.</p></li>
+<li><p>Druk de draaiknop in en bepaal wat er gebeurt met de waarde van de teller.</p></li>
+</ul>
+</li>
+<li><p>Voeg vervolgens code toe om te bepalen of het indexsignaal is gezet (na het indrukken van de draaiknop):</p>
+<ul>
+<li><p>Gebruik de functie <code class="docutils literal notranslate"><span class="pre">qc.IsIndexSet</span></code> om te bepalen of het indexsignaal is gezet. De teller onthoudt dit: het moet daarna worden gewist met de functie <code class="docutils literal notranslate"><span class="pre">qc.ClearStatusRegister</span></code>!</p></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="assignment_3.html" class="btn btn-neutral float-left" title="Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+        <a href="assignment_5.html" class="btn btn-neutral float-right" title="Opdracht 5: Interrupts in FreeRTOS" accesskey="n" rel="next">Volgende <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

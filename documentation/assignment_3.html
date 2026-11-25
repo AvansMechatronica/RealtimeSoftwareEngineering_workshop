@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS &mdash; Realtime Software Engineering Workshop 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="next" title="Opdracht 4: Producers, consumers en queues in FreeRTOS" href="assignment_4.html" />
+    <link rel="prev" title="Opdracht 2: Tasks en priorities in FreeRTOS" href="assignment_2.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Realtime Software Engineering Workshop
+              <img src="../_static/avans-hogeschool-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node_mcu.html">Systeemoverzicht NodeMCU-shield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Visual Studio Code en PlatformIO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_1.html">Opdracht 1: Installatie van de software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_2.html">Opdracht 2: Tasks en priorities in FreeRTOS</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#shared-resources-in-freertos">3.1 Shared resources in FreeRTOS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#analoog-digitaalconversie-met-de-adc">3.2 Analoog-digitaalconversie met de ADC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#synchronisatie-van-tasks">3.3 Synchronisatie van tasks</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_4.html">Opdracht 4: Producers, consumers en queues in FreeRTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_5.html">Opdracht 5: Interrupts in FreeRTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_6.html">Opdracht 6:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libraries.html">Softwarebibliotheken</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Voorbeeldprogramma’s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Veelgestelde vragen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teacher_manual.html">Docentenhandleiding</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Realtime Software Engineering Workshop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/assignment_3.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="opdracht-3-mutual-exclusion-en-task-synchronisation-in-freertos">
+<h1>Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS<a class="headerlink" href="#opdracht-3-mutual-exclusion-en-task-synchronisation-in-freertos" title="Link to this heading"></a></h1>
+<p>In dit practicum komen de volgende onderwerpen aan bod:</p>
+<ul class="simple">
+<li><p>Het gebruik van mutexes in FreeRTOS voor toegang tot gedeelde resources</p></li>
+<li><p>Het synchroniseren van tasks</p></li>
+<li><p>Het gebruik van de ADC</p></li>
+</ul>
+<section id="shared-resources-in-freertos">
+<span id="31-shared-resources-in-freertos"></span><h2>3.1 Shared resources in FreeRTOS<a class="headerlink" href="#shared-resources-in-freertos" title="Link to this heading"></a></h2>
+<p>Gegeven de volgende situatie: in een dierentuin zijn er vier entreepoortjes, waarmee het totaal aantal bezoekers in de dierentuin moet worden geteld. Er worden alleen inkomende bezoekers geteld.</p>
+<ul class="simple">
+<li><p>Het totale aantal inkomende bezoekers wordt opgeslagen in de globale variabele <code class="docutils literal notranslate"><span class="pre">G_NumberOfVisitors</span></code>.</p></li>
+<li><p>Elk entreepoortje wordt gesimuleerd door één task.</p></li>
+<li><p>Een inkomende bezoeker wordt geregistreerd door de globale variabele <code class="docutils literal notranslate"><span class="pre">G_NumberOfVisitors</span></code> met één te verhogen.</p></li>
+<li><p>Zodra een entreepoortje 100.000 bezoekers heeft geteld, laat de bijbehorende task het op dat moment totaal aantal getelde bezoekers zien, dus van alle vier de poortjes samen. Daarna gaat de task oneindig slapen. De task die als laatste klaar is, zou dus een totaal van <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">*</span> <span class="pre">100000</span> <span class="pre">=</span> <span class="pre">400000</span></code> bezoekers moeten laten zien.</p></li>
+</ul>
+<p>Omdat alle entreepoortjes volledig identiek functioneren, wordt in dit geval één functie <code class="docutils literal notranslate"><span class="pre">UserTask</span></code> gedefinieerd, waarvan vier kopieën in vier tasks worden gestart. Om deze tasks van elkaar te kunnen onderscheiden, wordt bij <code class="docutils literal notranslate"><span class="pre">xTaskCreate</span></code> een parameter meegegeven: het volgnummer van het entreepoortje, met de waarden 1 tot en met 4. <code class="docutils literal notranslate"><span class="pre">xTaskCreate</span></code> kan bijvoorbeeld als volgt worden aangeroepen:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">xTaskCreate</span><span class="p">(</span><span class="n">UserTask</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tsk_Counter&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">configMINIMAL_STACK_SIZE</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="w">            </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)(</span><span class="n">zooCounter</span><span class="p">),</span>
+<span class="w">            </span><span class="n">priority</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">handle_UserTask</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>De variabele <code class="docutils literal notranslate"><span class="pre">zooCounter</span></code> is in dit geval van het type <code class="docutils literal notranslate"><span class="pre">uint32_t</span></code> en heeft achtereenvolgens de waarden 1 tot en met 4. In <code class="docutils literal notranslate"><span class="pre">UserTask</span></code> wordt deze parameter weer omgezet naar het volgnummer van het poortje:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">zooEntry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)(</span><span class="n">pvParameters</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/3_1_zoo_framework</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Waarschuwing</p>
+<p>Voeg uitsluitend code toe aan, of wijzig code in, het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code>. Alle overige folders bevatten bestanden voor de systeemconfiguratie en bibliotheken. Laat deze <strong>ongewijzigd</strong>.</p>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.1.1</p>
+<p>Maak de functie <code class="docutils literal notranslate"><span class="pre">UserTask</span></code> af, zodat deze task de functionaliteit heeft zoals hierboven aangegeven. Vul de code aan op de plaatsen die zijn aangegeven met <code class="docutils literal notranslate"><span class="pre">TODO</span></code>.</p>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.1.2</p>
+<p>Maak de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code> af, zodat hierin vier tasks worden gecreëerd en gestart die elk één entreepoortje simuleren met het daarbij behorende volgnummer (1 t/m 4).</p>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.1.3</p>
+<p>Run het programma en bekijk het resultaat in de Terminal. Er zouden in totaal <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">x</span> <span class="pre">100000</span> <span class="pre">=</span> <span class="pre">400000</span></code> bezoekers moeten zijn geteld. Is dit correct?</p>
+</div>
+<p>De globale variabele <code class="docutils literal notranslate"><span class="pre">G_NumberOfVisitors</span></code> wordt door vier tasks bijgewerkt. Deze tasks lezen en schrijven “tegelijkertijd” dezelfde globale teller. Dat is ongewenst bij deze <em>shared resource</em>. De toegang tot deze variabele moet daarom worden afgeschermd, zodat slechts één task tegelijk de variabele kan bijwerken: de variabele lezen, met één verhogen en vervolgens terugschrijven. Hiervoor wordt gebruikgemaakt van een mutex.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.1.4</p>
+<ul class="simple">
+<li><p>Declareer een globale handle met de naam <code class="docutils literal notranslate"><span class="pre">zooMutex</span></code> van het type <code class="docutils literal notranslate"><span class="pre">SemaphoreHandle_t</span></code>.</p></li>
+<li><p>Creëer de mutex met de functie <code class="docutils literal notranslate"><span class="pre">xSemaphoreCreateMutex()</span></code> in de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code>.</p></li>
+<li><p>Pas de code in de functie <code class="docutils literal notranslate"><span class="pre">UserTask</span></code> zodanig aan dat de toegang tot de variabele <code class="docutils literal notranslate"><span class="pre">G_NumberOfVisitors</span></code> wordt afgeschermd met deze mutex. Maak hiervoor gebruik van de functies <code class="docutils literal notranslate"><span class="pre">xSemaphoreTake</span></code> en <code class="docutils literal notranslate"><span class="pre">xSemaphoreGive</span></code>.</p></li>
+</ul>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.1.5</p>
+<p>Test het aangepaste programma en controleer of het totaal aantal getelde bezoekers nu correct is (namelijk 400000).</p>
+</div>
+</section>
+<section id="analoog-digitaalconversie-met-de-adc">
+<span id="32-analoog-digitaalconversie-met-de-adc"></span><h2>3.2 Analoog-digitaalconversie met de ADC<a class="headerlink" href="#analoog-digitaalconversie-met-de-adc" title="Link to this heading"></a></h2>
+<p>Voor het meten van spanningen wordt de ADC-chip (MCP3208) op het NodeMCU-Shield gebruikt. Deze ADC is via de SPI-bus met de ESP32 verbonden en beschikt over 8 analoge ingangen; de ingangsspanning kan op één kanaal tegelijkertijd worden geconverteerd. In de documentatie van de <a class="reference internal" href="libraries/adc_3208_lib.html"><span class="std std-doc">ADC-bibliotheek</span></a> zijn de beschikbare functies beschreven.</p>
+<p>Voorlopig heb je alleen de volgende functie nodig. Deze start de conversie, wacht tot deze klaar is en geeft de gemeten spanning in volt terug:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">double</span><span class="w"> </span><span class="n">voltage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">adc</span><span class="p">.</span><span class="n">ReadVoltage</span><span class="p">(</span><span class="n">channel</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>In de volgende opdrachten worden de spanningen gemeten die worden ingesteld met de twee instelpotmeters op het NodeMCU-Shield:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Potmeter</p></th>
+<th class="head"><p>ADC-kanaal</p></th>
+<th class="head"><p>Bereik</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>RV1 / P0</p></td>
+<td><p>4</p></td>
+<td><p>0 V – 2,5 V</p></td>
+</tr>
+<tr class="row-odd"><td><p>RV2 / P1</p></td>
+<td><p>5</p></td>
+<td><p>0 V – 2,5 V</p></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Notitie</p>
+<p>De initialisatie van de <code class="docutils literal notranslate"><span class="pre">spi</span></code>- en <code class="docutils literal notranslate"><span class="pre">adc</span></code>-objecten is al gedaan in de functie <code class="docutils literal notranslate"><span class="pre">setup()</span></code>.</p>
+</div>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/3_2_adc_framework</span></code>. Voeg ook hier uitsluitend code toe aan, of wijzig code in, het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code>.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.2.1</p>
+<p>Bekijk de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code> en begrijp deze code. Maak vervolgens de functie <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> af, zodanig dat deze in een oneindige herhaling elke seconde de spanning laat zien van ADC-kanaal 4 (potmeter RV1/P0).</p>
+<p><strong>Aanwijzingen</strong></p>
+<ul class="simple">
+<li><p>Het kanaalnummer van de ADC is een parameter die in <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code> aan <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> is meegegeven. Maak hiervan gebruik!</p></li>
+<li><p>Lees de spanning met <code class="docutils literal notranslate"><span class="pre">adc.ReadVoltage(channel)</span></code> en toon deze met <code class="docutils literal notranslate"><span class="pre">ts_printf</span></code> in de Terminal.</p></li>
+<li><p>Controleer of de weergegeven waarden ongeveer correct zijn door aan de potmeter te draaien.</p></li>
+<li><p>Gebruik <code class="docutils literal notranslate"><span class="pre">vTaskDelay(pdMS_TO_TICKS(...))</span></code> om de task te laten wachten.</p></li>
+</ul>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.2.2</p>
+<p>Breid het programma in <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code> uit met een tweede task die dezelfde functie <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> uitvoert, maar dan voor ADC-kanaal 5 (potmeter RV2/P1). De waarden van beide kanalen worden dus elke seconde in de Terminal weergegeven. Maak dus <strong>geen</strong> kopie van de code van <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code>, maar start een nieuwe task met dezelfde code en een andere parameter!</p>
+<p>Controleer of de weergegeven waarden van beide kanalen (ongeveer) correct zijn door aan beide potmeters te draaien.</p>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.2.3</p>
+<p>Wijzig de functie <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> zodanig dat ADC-kanaal 4 elke 200 ms wordt weergegeven en ADC-kanaal 5 elke 2 seconden.</p>
+</div>
+<p>De ADC lijkt in deze programma’s schijnbaar correct te functioneren en goede waarden te meten. Dit is echter niet gegarandeerd.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.2.4</p>
+<p>Beredeneer welk principieel probleem optreedt in bovenstaande programma’s wanneer twee tasks dezelfde ADC (en dezelfde SPI-bus) gebruiken, en geef aan op welke (bekende) wijze dat kan worden opgelost.</p>
+</div>
+<p>Een andere oplossing voor dit principiële probleem is het toepassen van semaforen. Dit wordt in de volgende opdracht toegepast.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.2.5</p>
+<ul class="simple">
+<li><p>Declareer een globale handle met de naam <code class="docutils literal notranslate"><span class="pre">adcSema</span></code> van het type <code class="docutils literal notranslate"><span class="pre">SemaphoreHandle_t</span></code>.</p></li>
+<li><p>Creëer de semafoor met de functie <code class="docutils literal notranslate"><span class="pre">xSemaphoreCreateCounting()</span></code> in de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code>. De waarde voor zowel de maximale count als de initiële count is 1.</p></li>
+<li><p>Pas de code in de functie <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> zodanig aan dat de toegang tot de ADC is afgeschermd en dat slechts één task tegelijk de ADC kan gebruiken. Maak hiervoor gebruik van de functies <code class="docutils literal notranslate"><span class="pre">xSemaphoreTake</span></code> en <code class="docutils literal notranslate"><span class="pre">xSemaphoreGive</span></code>.</p></li>
+</ul>
+</div>
+</section>
+<section id="synchronisatie-van-tasks">
+<span id="33-synchronisatie-van-tasks"></span><h2>3.3 Synchronisatie van tasks<a class="headerlink" href="#synchronisatie-van-tasks" title="Link to this heading"></a></h2>
+<p>Mutexes worden gebruikt voor mutual exclusion. Ook semaforen kunnen hiervoor worden gebruikt. Een semafoor met maximale waarde 1, ook wel een binaire semafoor genoemd, is functioneel hetzelfde als een mutex. Semaforen hebben echter veel andere toepassingen, bijvoorbeeld het synchroniseren van tasks. In de volgende opdracht worden ze hiervoor gebruikt.</p>
+<p>Gegeven zijn twee tasks:</p>
+<ul class="simple">
+<li><p>De task <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> leest periodiek de spanningen van alle 8 ADC-kanalen (<code class="docutils literal notranslate"><span class="pre">N_ADC_CHANNELS</span></code>) en slaat de gemeten waarden op in de globale array <code class="docutils literal notranslate"><span class="pre">G_ADCValue[]</span></code>.</p></li>
+<li><p>De task <code class="docutils literal notranslate"><span class="pre">TaskDisplay</span></code> toont de waarden van <code class="docutils literal notranslate"><span class="pre">G_ADCValue[]</span></code> in de Terminal.</p></li>
+</ul>
+<p>De synchronisatie van deze tasks gebeurt met twee semaforen, zodat de volgorde van het meten van de ingangsspanningen en het weergeven daarvan is gesynchroniseerd: eerst meten, daarna weergeven, enzovoort.</p>
+<ul class="simple">
+<li><p>De task <code class="docutils literal notranslate"><span class="pre">TaskDisplay</span></code> wacht op de semafoor <code class="docutils literal notranslate"><span class="pre">semaDisplay</span></code>. Deze wordt vrijgegeven door <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code>, zodra deze task de waarden van <code class="docutils literal notranslate"><span class="pre">G_ADCValue[]</span></code> heeft bijgewerkt.</p></li>
+<li><p>De task <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> wacht op de semafoor <code class="docutils literal notranslate"><span class="pre">semaADC</span></code> voor een volgende meting. Deze wordt vrijgegeven zodra de task <code class="docutils literal notranslate"><span class="pre">TaskDisplay</span></code> de waarden van <code class="docutils literal notranslate"><span class="pre">G_ADCValue[]</span></code> heeft weergegeven.</p></li>
+<li><p>Bij het starten van beide tasks moet <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> eerst beginnen: eerst een meting uitvoeren en daarna pas de data weergeven. <code class="docutils literal notranslate"><span class="pre">TaskDisplay</span></code> moet wachten op beschikbare data, aangegeven door de semafoor <code class="docutils literal notranslate"><span class="pre">semaDisplay</span></code>. De initiële waarde van <code class="docutils literal notranslate"><span class="pre">semaDisplay</span></code> is daarom 0 en de initiële waarde van <code class="docutils literal notranslate"><span class="pre">semaADC</span></code> is 1.</p></li>
+</ul>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/3_3_thread_sync_framework</span></code>. Voeg ook hier uitsluitend code toe aan, of wijzig code in, het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code>.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 3.3.1</p>
+<ul class="simple">
+<li><p>Declareer een globale handle met de naam <code class="docutils literal notranslate"><span class="pre">semaADC</span></code> van het type <code class="docutils literal notranslate"><span class="pre">SemaphoreHandle_t</span></code>.</p></li>
+<li><p>Declareer een globale handle met de naam <code class="docutils literal notranslate"><span class="pre">semaDisplay</span></code> van het type <code class="docutils literal notranslate"><span class="pre">SemaphoreHandle_t</span></code>.</p></li>
+<li><p>Creëer beide semaforen met de functie <code class="docutils literal notranslate"><span class="pre">xSemaphoreCreateCounting()</span></code> in de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code>. Gebruik de juiste waarden voor de initiële count en de maximale count!</p></li>
+<li><p>Pas de code in de functies <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> en <code class="docutils literal notranslate"><span class="pre">TaskDisplay</span></code> zodanig aan dat beide tasks met elkaar gesynchroniseerd zijn: <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> wacht totdat <code class="docutils literal notranslate"><span class="pre">TaskDisplay</span></code> klaar is, en <code class="docutils literal notranslate"><span class="pre">TaskDisplay</span></code> wacht totdat <code class="docutils literal notranslate"><span class="pre">TaskADC</span></code> klaar is, enzovoort. Volg hierbij de <code class="docutils literal notranslate"><span class="pre">TODO</span></code>’s in de code.</p></li>
+<li><p>Controleer of de uitvoer in de Terminal correct is en of de volgorde daadwerkelijk is: meten → weergeven → meten → weergeven, enzovoort.</p></li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="assignment_2.html" class="btn btn-neutral float-left" title="Opdracht 2: Tasks en priorities in FreeRTOS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+        <a href="assignment_4.html" class="btn btn-neutral float-right" title="Opdracht 4: Producers, consumers en queues in FreeRTOS" accesskey="n" rel="next">Volgende <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

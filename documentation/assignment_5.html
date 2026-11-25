@@ -1,0 +1,296 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="nl" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Opdracht 5: Interrupts in FreeRTOS &mdash; Realtime Software Engineering Workshop 0.1 documentatie</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=6a604523" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a57088fb"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+      <script src="../_static/translations.js?v=e4d38c6a"></script>
+      <script data-sd-tabs-storage-prefix="sphinx-design-tab-id-" src="../_static/design-tabs.js?v=fcb327ea"></script>
+      <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Zoeken" href="../search.html" />
+    <link rel="next" title="Opdracht 6:" href="assignment_6.html" />
+    <link rel="prev" title="Opdracht 4: Producers, consumers en queues in FreeRTOS" href="assignment_4.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Realtime Software Engineering Workshop
+              <img src="../_static/avans-hogeschool-logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Zoek in documentatie" aria-label="Zoek in documentatie" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigatiemenu">
+              <p class="caption" role="heading"><span class="caption-text">Inhoudsopgave:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Inleiding</a></li>
+<li class="toctree-l1"><a class="reference internal" href="node_mcu.html">Systeemoverzicht NodeMCU-shield</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Visual Studio Code en PlatformIO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_1.html">Opdracht 1: Installatie van de software</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_2.html">Opdracht 2: Tasks en priorities in FreeRTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_3.html">Opdracht 3: Mutual exclusion en task synchronisation in FreeRTOS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_4.html">Opdracht 4: Producers, consumers en queues in FreeRTOS</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Opdracht 5: Interrupts in FreeRTOS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hardware-interrupts-met-een-drukknop">5.1 Hardware-interrupts met een drukknop</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#deferred-interrupt-processing">5.1.1 Deferred Interrupt Processing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#opdracht">5.1.2 Opdracht</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#periodieke-clock-interrupts">5.2 Periodieke clock-interrupts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#periodieke-clock-interrupts-combineren-met-queues">5.3 Periodieke clock-interrupts combineren met queues</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#de-functie-fmap">De functie <code class="docutils literal notranslate"><span class="pre">fmap</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="assignment_6.html">Opdracht 6:</a></li>
+<li class="toctree-l1"><a class="reference internal" href="libraries.html">Softwarebibliotheken</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Voorbeeldprogramma’s</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Veelgestelde vragen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="teacher_manual.html">Docentenhandleiding</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Navigatiemenu voor mobiel" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Realtime Software Engineering Workshop</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Paginanavigatie">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Opdracht 5: Interrupts in FreeRTOS</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/documentation/assignment_5.md.txt" rel="nofollow"> Bekijk paginabron</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="opdracht-5-interrupts-in-freertos">
+<h1>Opdracht 5: Interrupts in FreeRTOS<a class="headerlink" href="#opdracht-5-interrupts-in-freertos" title="Link to this heading"></a></h1>
+<p>In dit practicum komt het gebruik van interrupts in FreeRTOS aan bod. Er zijn drie opdrachten:</p>
+<ul class="simple">
+<li><p>In opdracht 5.1 wordt het principe van interrupts en de bijbehorende scheduling uitgelegd aan de hand van het indrukken van een drukknop.</p></li>
+<li><p>In opdracht 5.2 worden periodiek interrupts gegenereerd door een klokgenerator.</p></li>
+<li><p>In opdracht 5.3 worden periodieke interrupts gebruikt voor het uitvoeren van een lege control task. Daarnaast wordt een afzonderlijke task gebruikt voor het instellen van een parameter voor de control task.</p></li>
+</ul>
+<section id="hardware-interrupts-met-een-drukknop">
+<span id="51-hardware-interrupts-met-een-drukknop"></span><h2>5.1 Hardware-interrupts met een drukknop<a class="headerlink" href="#hardware-interrupts-met-een-drukknop" title="Link to this heading"></a></h2>
+<p>Hardware-interrupts onderbreken de lopende programma-executie omdat er een externe gebeurtenis plaatsvindt, dus een gebeurtenis in de fysieke buitenwereld die onmiddellijk aandacht van de processor nodig heeft. Deze interrupts kunnen bijvoorbeeld afkomstig zijn van een extern device dat data beschikbaar heeft voor verwerking.</p>
+<p>Door een interrupt kan de CPU op onvoorspelbare momenten worden onderbroken tijdens het uitvoeren van tasks. De code die direct en onmiddellijk moet worden uitgevoerd bij het afhandelen van een interrupt, heet een Interrupt Service Routine (ISR).</p>
+<p>In FreeRTOS heeft een ISR een hogere prioriteit dan <strong>elke</strong> andere task. Dat betekent het volgende:</p>
+<ul class="simple">
+<li><p>Een ISR is <strong>geen</strong> FreeRTOS-task en kan niet worden geblokkeerd. In een ISR kan dus bijvoorbeeld niet op een queue, mutex of semafoor worden gewacht.</p></li>
+<li><p>Een ISR mag zichzelf niet blokkeren en mag dus geen potentieel oneindige herhalingen bevatten. Een ISR heeft een hogere prioriteit dan de scheduler en kan bij een oneindige herhaling ervoor zorgen dat het systeem vastloopt.</p></li>
+<li><p>Een ISR moet zo kort mogelijk zijn, zowel in tijd als in uitvoerbare code. In een ISR mogen alleen de hoogst noodzakelijke acties worden uitgevoerd. Welke acties dat zijn, hangt meestal af van het device dat de interrupt genereert.</p></li>
+<li><p>In een ISR mag slechts gebruik worden gemaakt van enkele speciale FreeRTOS-functies. Deze hebben de vorm <code class="docutils literal notranslate"><span class="pre">&lt;functienaam&gt;FromISR</span></code>. Andere FreeRTOS-functies mogen absoluut niet worden gebruikt, omdat het systeem anders kan crashen of vastlopen. Een voorbeeld van een FreeRTOS-functie die in een ISR wel mag worden gebruikt, is <code class="docutils literal notranslate"><span class="pre">xSemaphoreGiveFromISR</span></code>.</p></li>
+<li><p>Op de ESP32 wordt een ISR gemarkeerd met <code class="docutils literal notranslate"><span class="pre">IRAM_ATTR</span></code>, zodat de code in het interne RAM staat en snel kan worden uitgevoerd.</p></li>
+</ul>
+<section id="deferred-interrupt-processing">
+<span id="511-deferred-interrupt-processing"></span><h3>5.1.1 Deferred Interrupt Processing<a class="headerlink" href="#deferred-interrupt-processing" title="Link to this heading"></a></h3>
+<p>Om een interrupt toch in een normale FreeRTOS-task te kunnen afhandelen, wordt gebruikgemaakt van <em>Deferred Interrupt Processing</em> (uitgestelde interruptafhandeling). Hierbij wordt de niet-tijdkritische verwerking van de data niet in de ISR zelf uitgevoerd, maar uitgesteld en verder afgehandeld in een normale FreeRTOS-task. Meestal heeft die task een hogere prioriteit dan alle andere (applicatie)tasks, maar per definitie een lagere prioriteit dan de interrupt.</p>
+<p>Een ISR heeft daarom uitsluitend de volgende beperkte functionaliteit:</p>
+<ul class="simple">
+<li><p>Het afhandelen van de absoluut noodzakelijke acties, zoals het registreren van de interruptbron of -oorzaak en het wegnemen van de oorzaak van de interrupt. Dit hangt vaak af van het type device dat de interrupt genereert.</p></li>
+<li><p>Het signaleren aan de FreeRTOS-scheduler dat een interrupt is opgetreden en dat een FreeRTOS-task de data moet verwerken. Met andere woorden: de ISR zal meestal een task deblokkeren. Dit kan bijvoorbeeld met de functie <code class="docutils literal notranslate"><span class="pre">xSemaphoreGiveFromISR</span></code>.</p></li>
+</ul>
+<p>Zie figuur 1 voor een voorbeeld van <em>Deferred Interrupt Processing</em> (bron: <a class="reference external" href="https://www.freertos.org/deferred_interrupt_processing.html">FreeRTOS: Deferred Interrupt Processing</a>).</p>
+<p><img alt="Deferred Interrupt Processing" src="../_images/deferred_interrupt_processing.png" /></p>
+<p><em>Figuur 1. Deferred Interrupt Processing</em></p>
+<p>Als de FreeRTOS-task die de interrupt moet afhandelen een voldoende hoge prioriteit heeft ten opzichte van de overige tasks, wordt deze onmiddellijk uitgevoerd nadat de zeer korte ISR klaar is. Feitelijk wordt de verwerking van de interrupt aaneengesloten in de tijd uitgevoerd, alsof alle verwerking in de ISR zelf had plaatsgevonden. Zie figuur 1: alle interruptverwerking vindt plaats tussen de tijdstippen <span class="math notranslate nohighlight">\(t_2\)</span> en <span class="math notranslate nohighlight">\(t_4\)</span>, ook al wordt een deel van de verwerking uitgevoerd door een task (het blauwe deel).</p>
+<p>Op de ESP32 ziet een ISR die een task deblokkeert er in grote lijnen als volgt uit:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="n">IRAM_ATTR</span><span class="w"> </span><span class="nf">interruptHandler</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">BaseType_t</span><span class="w"> </span><span class="n">higherPriorityTaskWoken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pdFALSE</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// ... hoogst noodzakelijke acties ...</span>
+<span class="w">    </span><span class="n">xSemaphoreGiveFromISR</span><span class="p">(</span><span class="n">handle_InterruptSemaphore</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">higherPriorityTaskWoken</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// laat de scheduler direct wisselen als er een task met hogere prioriteit is gedeblokkeerd</span>
+<span class="w">    </span><span class="n">portYIELD_FROM_ISR</span><span class="p">(</span><span class="n">higherPriorityTaskWoken</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Een ISR wordt aan een GPIO-pin gekoppeld met de Arduino-functie <code class="docutils literal notranslate"><span class="pre">attachInterrupt</span></code>. Deze functie koppelt de handler én zet de interrupt aan:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">pinMode</span><span class="p">(</span><span class="n">pin</span><span class="p">,</span><span class="w"> </span><span class="n">INPUT_PULLUP</span><span class="p">);</span>
+<span class="n">attachInterrupt</span><span class="p">(</span><span class="n">digitalPinToInterrupt</span><span class="p">(</span><span class="n">pin</span><span class="p">),</span><span class="w"> </span><span class="n">interruptHandler</span><span class="p">,</span><span class="w"> </span><span class="n">FALLING</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="opdracht">
+<span id="512-opdracht"></span><h3>5.1.2 Opdracht<a class="headerlink" href="#opdracht" title="Link to this heading"></a></h3>
+<p>Om inzicht te krijgen in de werking van interrupts, wordt in de volgende opdracht een interrupt gegenereerd door het indrukken van de drukknop op het NodeMCU-Shield die rechtstreeks op de ESP32 is aangesloten (<code class="docutils literal notranslate"><span class="pre">BUTTON_0</span></code> in de code, GPIO 4, zie ook de <a class="reference internal" href="libraries/button_lib.html"><span class="std std-doc">knopbibliotheek</span></a>). De andere knoppen zijn niet rechtstreeks op een GPIO-pin aangesloten en worden in deze opdracht niet gebruikt. Deze interrupt wordt afgehandeld door een ISR en een bijbehorende FreeRTOS-task. Als de knop wordt ingedrukt, gebeurt het volgende:</p>
+<ul class="simple">
+<li><p>De globale variabele <code class="docutils literal notranslate"><span class="pre">g_InterruptCount</span></code> wordt in de ISR met één verhoogd.</p></li>
+<li><p>Een FreeRTOS-task laat vervolgens de waarde van deze variabele zien, dus 1, 2, 3 enzovoort, en wordt geblokkeerd totdat de knop weer wordt ingedrukt.</p></li>
+</ul>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/5_1_button_interrupts</span></code>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Waarschuwing</p>
+<p>Voeg uitsluitend code toe aan, of wijzig code in, het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code>. Alle overige folders bevatten bestanden voor de systeemconfiguratie en bibliotheken. Laat deze <strong>ongewijzigd</strong>.</p>
+</div>
+<p>Zoek in het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code> naar de tekenreeks <code class="docutils literal notranslate"><span class="pre">TODO</span></code> voor de bijbehorende aanwijzingen in de broncode.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 5.1.2</p>
+<ul class="simple">
+<li><p>In het framework is de task <code class="docutils literal notranslate"><span class="pre">TaskInterruptHandler</span></code> al gegeven. Dit is een FreeRTOS-task die wordt gestart in de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code>. Zorg ervoor dat deze op een voldoende hoge prioriteit wordt uitgevoerd.</p></li>
+<li><p>Declareer de globale variabele <code class="docutils literal notranslate"><span class="pre">g_InterruptCount</span></code> van het type <code class="docutils literal notranslate"><span class="pre">uint32_t</span></code> met beginwaarde 0.</p></li>
+<li><p>Declareer de globale handle <code class="docutils literal notranslate"><span class="pre">handle_InterruptSemaphore</span></code> van het type <code class="docutils literal notranslate"><span class="pre">SemaphoreHandle_t</span></code> met beginwaarde <code class="docutils literal notranslate"><span class="pre">NULL</span></code>. Dat betekent dat deze semafoor nog niet is geïnitialiseerd.</p></li>
+<li><p>Maak met deze globale handle een semafoor in de functie <code class="docutils literal notranslate"><span class="pre">TaskInterruptHandler</span></code>. Maak gebruik van de functie <code class="docutils literal notranslate"><span class="pre">xSemaphoreCreateCounting</span></code>. Bepaal de juiste waarden van de parameters voor deze functie aan de hand van de documentatie. Deze semafoor wordt gebruikt om vanuit de ISR de bijbehorende task te deblokkeren.</p></li>
+<li><p>Gegeven is de (nog niet complete) ISR-functie <code class="docutils literal notranslate"><span class="pre">interruptHandler</span></code>. Deze functie moet worden aangeroepen als de drukknop wordt ingedrukt. Let op: deze functie wordt “aangeroepen” door een hardware-event; het is dus <strong>niet</strong> mogelijk om deze rechtstreeks vanuit de programmacode aan te roepen zoals een gewone functie. De bijbehorende semafoor mag pas worden vrijgegeven nádat deze is geïnitialiseerd, vandaar de controle op <code class="docutils literal notranslate"><span class="pre">NULL</span></code> (anders kan het systeem crashen).</p></li>
+<li><p>Koppel de functie <code class="docutils literal notranslate"><span class="pre">interruptHandler</span></code> in de functie <code class="docutils literal notranslate"><span class="pre">TaskInterruptHandler</span></code> aan de drukknop met <code class="docutils literal notranslate"><span class="pre">attachInterrupt</span></code>:</p>
+<ul>
+<li><p>Zet de pin eerst als ingang met <code class="docutils literal notranslate"><span class="pre">pinMode(BUTTON_0,</span> <span class="pre">INPUT_PULLUP)</span></code>.</p></li>
+<li><p>Gebruik de flank <code class="docutils literal notranslate"><span class="pre">FALLING</span></code>: bij het indrukken van de knop vindt een overgang van HOOG naar LAAG plaats op de ingang van de microcontroller (vanwege de pull-up-weerstand). Als er een interrupt moet optreden bij het loslaten van de knop, moet <code class="docutils literal notranslate"><span class="pre">RISING</span></code> worden gebruikt.</p></li>
+<li><p>Koppel de interrupt pas nadat de semafoor is aangemaakt.</p></li>
+</ul>
+</li>
+<li><p>Pas de code in de functie <code class="docutils literal notranslate"><span class="pre">TaskInterruptHandler</span></code> zodanig aan dat deze het volgende doet:</p>
+<ul>
+<li><p>Wacht op de semafoor die in de ISR wordt vrijgegeven.</p></li>
+<li><p>Laat de waarde van <code class="docutils literal notranslate"><span class="pre">g_InterruptCount</span></code> zien zodra de knop is ingedrukt (dus 1, 2, 3 enzovoort) en wacht daarna totdat de knop weer wordt ingedrukt.</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 5.1.3</p>
+<p>Druk een aantal keren op de knop. Neemt <code class="docutils literal notranslate"><span class="pre">g_InterruptCount</span></code> bij elke druk precies met één toe? Verklaar wat je ziet (denk aan <em>contactdender</em> van de knop).</p>
+</div>
+</section>
+</section>
+<section id="periodieke-clock-interrupts">
+<span id="52-periodieke-clock-interrupts"></span><h2>5.2 Periodieke clock-interrupts<a class="headerlink" href="#periodieke-clock-interrupts" title="Link to this heading"></a></h2>
+<p>Mechatronische regelsystemen maken vaak gebruik van een hard periodiek kloksignaal met een vaste frequentie, afkomstig van een externe bron. De frequentie waarmee sensoren moeten worden gesampled en de frequentie waarmee actuatoren moeten worden aangestuurd, bepalen de gewenste frequentie van dat externe kloksignaal.</p>
+<p>In dit practicum wordt gebruikgemaakt van een externe klok van 1 kHz, met een periodetijd van 1 ms. De frequentie van 1 kHz is een realistische waarde die ook bij projecten in periode 3.3 en periode 3.4 wordt toegepast.</p>
+<p>Dit kloksignaal is afkomstig van de klokgenerator op het NodeMCU-Shield (DE9-connector <code class="docutils literal notranslate"><span class="pre">J6</span></code>). Deze klok is afgeleid van een kristaloscillator en levert verschillende frequenties, onder andere 1 kHz.</p>
+<p>Verbind met de daarvoor bedoelde kabel de 1 kHz-uitgang van de klokgenerator (<code class="docutils literal notranslate"><span class="pre">J6</span></code>) met digitale ingang D0 (pin 1 van DE9-connector <code class="docutils literal notranslate"><span class="pre">J11</span></code>). Deze ingang is op de ESP32 aangesloten op GPIO 36 (<code class="docutils literal notranslate"><span class="pre">interrupt_pin</span></code> in de code).</p>
+<div class="admonition note">
+<p class="admonition-title">Notitie</p>
+<p>Deze opdracht is vergelijkbaar met de vorige opdracht, waarbij een drukknop een interrupt genereerde. Ook de code is vergelijkbaar. Een belangrijk verschil is echter dat de frequentie van de interrupts veel hoger is (<span class="math notranslate nohighlight">\(f = 1\ \mathrm{kHz}\)</span>, <span class="math notranslate nohighlight">\(T = 1\ \mathrm{ms}\)</span>), waardoor de interrupt-handler daarop moet worden aangepast.</p>
+</div>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/5_2_timer_interrupts_1</span></code>. Zoek in het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code> naar de tekenreeks <code class="docutils literal notranslate"><span class="pre">TODO</span></code> voor de bijbehorende aanwijzingen in de broncode.</p>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 5.2.1</p>
+<ul class="simple">
+<li><p>In het framework is de task <code class="docutils literal notranslate"><span class="pre">TaskTimerInterruptHandler</span></code> al gegeven. Dit is een FreeRTOS-task die wordt gestart in de functie <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code>. Zorg ervoor dat deze op een voldoende hoge prioriteit wordt uitgevoerd.</p></li>
+<li><p>Declareer de globale variabele <code class="docutils literal notranslate"><span class="pre">g_InterruptCount</span></code> van het type <code class="docutils literal notranslate"><span class="pre">uint32_t</span></code> met beginwaarde 0.</p></li>
+<li><p>Declareer de globale handle <code class="docutils literal notranslate"><span class="pre">handle_InterruptSemaphore</span></code> van het type <code class="docutils literal notranslate"><span class="pre">SemaphoreHandle_t</span></code> met beginwaarde <code class="docutils literal notranslate"><span class="pre">NULL</span></code>.</p></li>
+<li><p>Maak met deze globale handle een semafoor in de functie <code class="docutils literal notranslate"><span class="pre">TaskTimerInterruptHandler</span></code>. Maak gebruik van de functie <code class="docutils literal notranslate"><span class="pre">xSemaphoreCreateCounting</span></code> en bepaal de juiste waarden voor <code class="docutils literal notranslate"><span class="pre">maxSemCount</span></code> en <code class="docutils literal notranslate"><span class="pre">initialSemCount</span></code>.</p></li>
+<li><p>Gegeven is de (nog niet complete) ISR-functie <code class="docutils literal notranslate"><span class="pre">ClockInterruptHandler</span></code>. Deze functie moet bij elk klokevent, dus elke milliseconde, worden aangeroepen. Ook deze functie kan <strong>niet</strong> rechtstreeks vanuit de programmacode worden aangeroepen. De semafoor mag pas worden vrijgegeven nádat deze is geïnitialiseerd, vandaar de controle op <code class="docutils literal notranslate"><span class="pre">NULL</span></code>.</p></li>
+<li><p>In de vorige opdracht met de drukknop werd de bijbehorende task bij <strong>elke</strong> interrupt gedeblokkeerd. Bij deze opdracht moet de task <strong>niet</strong> bij elke interrupt (die elke milliseconde optreedt) worden gedeblokkeerd, maar slechts elke seconde. Dat betekent dat het deblokkeren moet gebeuren bij elke 1000e interrupt.</p></li>
+<li><p>Koppel de functie <code class="docutils literal notranslate"><span class="pre">ClockInterruptHandler</span></code> aan de klok met <code class="docutils literal notranslate"><span class="pre">pinMode(interrupt_pin,</span> <span class="pre">INPUT)</span></code> en <code class="docutils literal notranslate"><span class="pre">attachInterrupt(digitalPinToInterrupt(interrupt_pin),</span> <span class="pre">ClockInterruptHandler,</span> <span class="pre">FALLING)</span></code>. <code class="docutils literal notranslate"><span class="pre">RISING</span></code> mag ook; het is immers een periodiek signaal. Koppel de interrupt pas nadat de semafoor is aangemaakt.</p></li>
+<li><p>Laat in <code class="docutils literal notranslate"><span class="pre">TaskTimerInterruptHandler</span></code> elke seconde zowel <code class="docutils literal notranslate"><span class="pre">g_InterruptCount</span></code> (het aantal “harde” klokinterrupts, elke milliseconde) als <code class="docutils literal notranslate"><span class="pre">taskInterruptCount</span></code> (het aantal keer dat de task is gedeblokkeerd, elke seconde) zien. De laatste moet dus een factor 1000 kleiner zijn!</p></li>
+</ul>
+</div>
+</section>
+<section id="periodieke-clock-interrupts-combineren-met-queues">
+<span id="53-periodieke-clock-interrupts-combineren-met-queues"></span><h2>5.3 Periodieke clock-interrupts combineren met queues<a class="headerlink" href="#periodieke-clock-interrupts-combineren-met-queues" title="Link to this heading"></a></h2>
+<p>In een mechatronisch regelsysteem is er minimaal één task die periodiek het regelalgoritme uitvoert: de <em>control task</em>. De periodetijd wordt bepaald door de klokfrequentie van een externe klok, zoals in opdracht 5.2 met een frequentie van 1 kHz. In opdracht 5.2 is de control task geïmplementeerd in de functie <code class="docutils literal notranslate"><span class="pre">TaskTimerInterruptHandler</span></code>.</p>
+<p>Daarnaast zijn er meestal één of meer tasks met een andere functionaliteit, zoals het tijdens runtime instellen van één of meer parameters in de control task. In deze opdracht krijgt de control task een waarde aangeleverd door een task die één van de potmeters uitleest en de waarde daarvan in een queue zet. Deze queue bevat precies één waarde. De control task leest de waarde uit die in de queue is gezet.</p>
+<p>Open in Visual Studio Code de folder/map <code class="docutils literal notranslate"><span class="pre">&lt;path-to-your-project&gt;/workspace/assignments/5_3_timer_interrupts_2</span></code>. Zoek in het bestand <code class="docutils literal notranslate"><span class="pre">src/main.cpp</span></code> naar de tekenreeks <code class="docutils literal notranslate"><span class="pre">TODO</span></code> voor de bijbehorende aanwijzingen in de broncode.</p>
+<section id="de-functie-fmap">
+<h3>De functie <code class="docutils literal notranslate"><span class="pre">fmap</span></code><a class="headerlink" href="#de-functie-fmap" title="Link to this heading"></a></h3>
+<p>In deze opdracht wordt gebruikgemaakt van de functie <code class="docutils literal notranslate"><span class="pre">fmap</span></code> (zie de <a class="reference internal" href="libraries/map.html"><span class="std std-doc">map-bibliotheek</span></a>). Deze functie beeldt, ofwel “mapt”, de aangeboden ingangswaarde <code class="docutils literal notranslate"><span class="pre">x1</span></code> in het bereik <code class="docutils literal notranslate"><span class="pre">[in_min,</span> <span class="pre">in_max]</span></code> lineair af op de waarde <code class="docutils literal notranslate"><span class="pre">y1</span></code> in het uitgangsbereik <code class="docutils literal notranslate"><span class="pre">[out_min,</span> <span class="pre">out_max]</span></code>, zie figuur 2.</p>
+<p><img alt="De functie fmap" src="../_images/fmap.png" /></p>
+<p><em>Figuur 2. De functie <code class="docutils literal notranslate"><span class="pre">fmap</span></code></em></p>
+<p>Voorbeeld 1: een ruwe ADC-waarde <code class="docutils literal notranslate"><span class="pre">adcValue</span></code> tussen 0 en 4095 (zoals teruggegeven door <code class="docutils literal notranslate"><span class="pre">adc.ReadRaw()</span></code>) kan worden afgebeeld op een bereik tussen -3,0 en 8,0:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">mappedValue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmap</span><span class="p">(</span><span class="n">adcValue</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">4095</span><span class="p">,</span><span class="w"> </span><span class="mf">-3.0</span><span class="p">,</span><span class="w"> </span><span class="mf">8.0</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Voorbeeld 2: de functie kan worden gebruikt om de ADC-waarde <code class="docutils literal notranslate"><span class="pre">adcValue</span></code> om te zetten naar een relevante waarde voor de gebruiker of applicatie, bijvoorbeeld een bandbreedte tussen 35 Hz en 70 Hz:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">bandBreedte</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fmap</span><span class="p">(</span><span class="n">adcValue</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">4095</span><span class="p">,</span><span class="w"> </span><span class="mf">35.0</span><span class="p">,</span><span class="w"> </span><span class="mf">70.0</span><span class="p">);</span>
+</pre></div>
+</div>
+<div class="tip admonition">
+<p class="admonition-title">Opdracht 5.3.1</p>
+<ul class="simple">
+<li><p>In het framework is de control task <code class="docutils literal notranslate"><span class="pre">TaskTimerInterruptHandler</span></code> al gegeven. Zorg ervoor dat deze op een voldoende hoge prioriteit wordt uitgevoerd.</p></li>
+<li><p>Ook de interrupt-handler die elke milliseconde door de klok wordt aangeroepen (<code class="docutils literal notranslate"><span class="pre">ClockInterruptHandler</span></code>) is al gegeven.</p></li>
+<li><p>Declareer een globale queue-handle <code class="docutils literal notranslate"><span class="pre">handle_ParameterQueue</span></code> van het type <code class="docutils literal notranslate"><span class="pre">QueueHandle_t</span></code> en maak in <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code> een queue voor precies één waarde van het type <code class="docutils literal notranslate"><span class="pre">double</span></code>.</p></li>
+<li><p>Start in <code class="docutils literal notranslate"><span class="pre">StartUserTasks</span></code> ook de task <code class="docutils literal notranslate"><span class="pre">TaskParameterSetting</span></code>. Geef het ADC-kanaal van potmeter RV1/P0 (kanaal 4) mee als parameter.</p></li>
+<li><p>Een deel van de task <code class="docutils literal notranslate"><span class="pre">TaskParameterSetting</span></code> is al gegeven. Maak deze functie af. Deze functie moet het volgende continu blijven herhalen:</p>
+<ul>
+<li><p>Lees de spanning van het meegegeven kanaal met <code class="docutils literal notranslate"><span class="pre">adc.ReadVoltage(channel)</span></code>. Voor de potmeter ligt deze waarde altijd tussen 0 V en 2,5 V.</p></li>
+<li><p>Normaliseer deze waarde met de functie <code class="docutils literal notranslate"><span class="pre">fmap</span></code> van het bereik 0 – 2,5 V naar het bereik <code class="docutils literal notranslate"><span class="pre">minValue</span></code> – <code class="docutils literal notranslate"><span class="pre">maxValue</span></code>.</p></li>
+<li><p>Als deze genormaliseerde waarde voldoende afwijkt van de vorige waarde (meer dan <code class="docutils literal notranslate"><span class="pre">threshold</span></code>), zet dan de nieuwe genormaliseerde waarde in de queue (met lengte één) door de vorige waarde te overschrijven. Gebruik hiervoor de functie <code class="docutils literal notranslate"><span class="pre">xQueueOverwrite</span></code>. Als het verschil met de vorige waarde te klein is, hoeft de waarde niet in de queue te worden gezet.</p></li>
+<li><p>Wacht 10 ms met <code class="docutils literal notranslate"><span class="pre">vTaskDelay(pdMS_TO_TICKS(10))</span></code>.</p></li>
+</ul>
+</li>
+<li><p>Lees vervolgens in de control task (<code class="docutils literal notranslate"><span class="pre">TaskTimerInterruptHandler</span></code>) de queue uit waarin de genormaliseerde waarde van de potmeter staat, en druk deze af in de Terminal. De queue moet worden uitgelezen met de functie <code class="docutils literal notranslate"><span class="pre">xQueuePeek</span></code> (en <strong>niet</strong> met de functie <code class="docutils literal notranslate"><span class="pre">xQueueReceive</span></code>). <code class="docutils literal notranslate"><span class="pre">xQueuePeek</span></code> verwijdert de gelezen waarde niet uit de queue: er blijft dus altijd precies één geldige waarde in staan, namelijk de laatste waarde die door de task <code class="docutils literal notranslate"><span class="pre">TaskParameterSetting</span></code> in de queue is gezet.</p></li>
+</ul>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Voettekst">
+        <a href="assignment_4.html" class="btn btn-neutral float-left" title="Opdracht 4: Producers, consumers en queues in FreeRTOS" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Vorige</a>
+        <a href="assignment_6.html" class="btn btn-neutral float-right" title="Opdracht 6:" accesskey="n" rel="next">Volgende <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright Gerard Harkema.</p>
+  </div>
+
+  Gebouwd met <a href="https://www.sphinx-doc.org/">Sphinx</a> met een
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">thema</a>
+    geleverd door <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
