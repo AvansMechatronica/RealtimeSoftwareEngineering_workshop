@@ -8,13 +8,13 @@
  */ 
 
 ///////////////////////////////////////////////////////////////////////////////
-// system includes
+// Systeem-includes
 
 #include <Arduino.h>
 #include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-// application includes
+// Applicatie-includes
 #include "command_console.h"
 #include "heartbeat.h"
 #include "ts_printf.h"
@@ -22,57 +22,54 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// FreeRTOS task handle
+// FreeRTOS task-handles
 //
-// The handle is filled by xTaskCreate() when TaskADC is started. It can be
-// used later to identify, suspend, resume, or delete the task. Initializing it
-// to NULL makes it clear that the task does not exist before setup starts it.
+// Een handle wordt door xTaskCreate() ingevuld zodra de taak is aangemaakt.
+// Daarmee kan de taak later worden geïdentificeerd, gepauzeerd (suspend),
+// hervat (resume) of verwijderd (delete). De beginwaarde NULL geeft aan dat
+// de taak nog niet bestaat zolang setup() hem niet heeft gestart.
 
 ///////////////////////////////////////////////////////////////////////////////
-// user task handler declarations
+// Declaraties van de task-handles
 
-xTaskHandle handle_HartbeatTask		= NULL;
 xTaskHandle handle_QuadratureTask	= NULL;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// function prototypes
+// Functieprototypes
 void StartUserTasks(void);
 void TaskQuadrature(void *pvParameters);
 
 ///////////////////////////////////////////////////////////////////////////////
-// HAL includes for RTSW board
+// HAL-includes voor het RTSW-board
 #include "spi_lib.h"
 #include "qc_7366_lib.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// SPI and Quadrature Counter instances
+// SPI- en quadratuurteller-instanties
 //
-// These objects represent the SPI interface and the quadrature counter hardware. They are
-// used throughout the application to read quadrature encoder values.
+// Deze objecten representeren de SPI-interface en de quadratuurteller (LS7366).
+// Ze worden gebruikt om de stand van de quadratuur-encoder uit te lezen.
 spi_device spi;
 qc7366 qc;
 
 ///////////////////////////////////////////////////////////////////////////////
 // StartUserTasks
 //
-// Creates the application's user task. The task runs independently from the
-// Arduino loop() function under the control of the FreeRTOS scheduler.
+// Maakt de applicatietaken aan. Deze taken draaien onafhankelijk van de
+// Arduino-functie loop(), onder besturing van de FreeRTOS-scheduler.
 //
-// configMINIMAL_STACK_SIZE is sufficient for this small task because it only uses
-// a few integer variables, and the output functions. The
-// priority is deliberately kept low so system and console tasks can continue
-// to run when they need processor time.
+// De stackgrootte is gebaseerd op configMINIMAL_STACK_SIZE; dat is voldoende
+// voor een kleine taak met een paar lokale variabelen en tekstuitvoer. Vergroot
+// de stack (bijvoorbeeld * 2) als een taak meer doet. De prioriteit is bewust
+// laag gehouden, zodat systeem- en consoletaken processortijd blijven krijgen.
 
 void StartUserTasks(void)
 {
 	BaseType_t result = pdFAIL;
 	uint8_t priority = 0;
 	
-	uint8_t queueSize = 5;
-	// TODO: queue aanmaken met globale queue handle
-		
-	result = xTaskCreate(TaskQuadrature, "tsk_Quad", (configMINIMAL_STACK_SIZE), NULL, priority, &handle_QuadratureTask);
+	result = xTaskCreate(TaskQuadrature, "tsk_Quad", (configMINIMAL_STACK_SIZE * 2), NULL, priority, &handle_QuadratureTask);
 	if (result == pdPASS )
 	{
 	}
@@ -81,6 +78,8 @@ void StartUserTasks(void)
 
 ///////////////////////////////////////////////////////////////////////////////
 // void TaskQuadrature(void *pvParameters)
+//
+// Stelt de quadratuurteller in en leest elke seconde de tellerstand uit.
 
 void TaskQuadrature(void *pvParameters)
 {
@@ -92,19 +91,19 @@ void TaskQuadrature(void *pvParameters)
 
 	ts_printf("> Task Quadrature started\n");
 
+	// stel de quadratuurteller in en zet de teller aan
 	qc.WriteModeRegister(qcChannel, QC_MODE_REGISTER_1, mode);
 	qc.EnableCounter(qcChannel);
 
 	while (true)
 	{
-		// TODO: vul de volgende code aan:
-		//		Quadrature uitlezen kanaal 0qc.
+		// quadratuurteller uitlezen (kanaal qcChannel) en de stand afdrukken
 		qcCount = qc.ReadCountRegister(qcChannel);
 		ts_printf("Quadrature count: %ld\n", qcCount);
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 	
-	// we never get here!
+	// hier komen we nooit!
 	vTaskDelete(NULL);
 }
 
@@ -114,37 +113,37 @@ void TaskQuadrature(void *pvParameters)
 ///////////////////////////////////////////////////////////////////////////////
 // setup
 //
-// Arduino calls setup() once during boot. The initialization order is
-// important: serial output is configured first, followed by the shared output
-// task, the heartbeat, system-information commands, the user task, and finally
-// the command console. The short delays give each subsystem time to finish its
-// startup before the next subsystem begins using it.
+// Arduino roept setup() één keer aan tijdens het opstarten. De volgorde is
+// belangrijk: eerst de seriële uitvoer, daarna de gedeelde uitvoertaak
+// (ts_printf), de heartbeat, de systeeminformatie-commando's, de
+// applicatietaken en tot slot de commandoconsole. De korte vertragingen geven
+// elk subsysteem tijd om op te starten voordat het volgende het gebruikt.
 
 void setup (void)
 {
 	Serial.begin(115200);
 	delay(1000);
 	Serial.println("System initializing");
-	// Start the task used by ts_printf and ts_debug for serialized output.
+	// Start de taak die ts_printf en ts_debug gebruiken voor geserialiseerde uitvoer.
 	StartTsPrintfTask(NULL);
 
-	// Blink the board LED as a heartbeat so the system's main activity can be
-	// observed independently from the LED controlled by TaskADC.
+	// Laat de LED op het ESP32-board knipperen als heartbeat, zodat los van de
+	// applicatietaken zichtbaar is dat het systeem draait.
 	StartHeartbeatTask(LED_PIN_ESP32_BOARD);
 	delay(500);
-	// Add commands that expose system information through the console.
+	// Voeg commando's toe die systeeminformatie via de console beschikbaar maken.
 	RegisterSystemInfoCommands();
 	delay(500);
 
-	// Initialize the SPI hardware before accessing the ADC.
+	// Initialiseer de SPI-bus voordat de SPI-randapparatuur wordt gebruikt.
 	spi.Init();
-	// Initialize the ADC hardware before accessing the analog input.
+	// Initialiseer de quadratuurteller voordat hij wordt gebruikt.
 	qc.Init(&spi);
 
-	// Start the application task that controls the DIO output.
+	// Start de applicatietaken.
 	StartUserTasks();
 	
-	// Start the interactive command console after the shared services exist.
+	// Start de interactieve commandoconsole nu de gedeelde services bestaan.
 	StartCommandConsoleTask(NULL);
 
 	delay(500);
@@ -152,7 +151,7 @@ void setup (void)
 
 void loop(void)
 {
-	// Application work is performed by FreeRTOS tasks. Arduino still calls
-	// loop(), so it uses a delay to yield CPU time instead of busy-spinning.
+	// Het eigenlijke werk gebeurt in FreeRTOS-taken. Arduino roept loop() nog
+	// steeds aan; de delay geeft de CPU vrij in plaats van actief te wachten.
   delay(500);
 }

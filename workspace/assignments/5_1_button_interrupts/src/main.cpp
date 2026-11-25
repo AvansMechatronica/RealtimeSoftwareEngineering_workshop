@@ -8,13 +8,13 @@
  */ 
 
 ///////////////////////////////////////////////////////////////////////////////
-// system includes
+// Systeem-includes
 
 #include <Arduino.h>
 #include <string.h>
 
 ///////////////////////////////////////////////////////////////////////////////
-// application includes
+// Applicatie-includes
 #include "command_console.h"
 #include "heartbeat.h"
 #include "ts_printf.h"
@@ -22,24 +22,25 @@
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// HAL includes for RTSW board
+// HAL-includes voor het RTSW-board
 #include "dio_lib.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-// FreeRTOS task handle
+// FreeRTOS task-handles
 //
-// The handle is filled by xTaskCreate() when UserTask is started. It can be
-// used later to identify, suspend, resume, or delete the task. Initializing it
-// to NULL makes it clear that the task does not exist before setup starts it.
+// Een handle wordt door xTaskCreate() ingevuld zodra de taak is aangemaakt.
+// Daarmee kan de taak later worden geïdentificeerd, gepauzeerd (suspend),
+// hervat (resume) of verwijderd (delete). De beginwaarde NULL geeft aan dat
+// de taak nog niet bestaat zolang setup() hem niet heeft gestart.
 
 xTaskHandle handle_TaskInterruptHandler	= NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Function prototypes
+// Functieprototypes
 //
-// These declarations make the task and startup functions available before
-// their implementations below. FreeRTOS tasks use a void pointer parameter,
-// even when the task does not need application-specific parameters.
+// Deze declaraties maken de taak- en opstartfuncties bekend vóór hun
+// implementatie verderop. Een FreeRTOS-taak krijgt altijd een void-pointer
+// als parameter, ook als de taak zelf geen parameters nodig heeft.
 
 void TaskInterruptHandler(void *pvParameters);
 void StartUserTasks(void);
@@ -48,13 +49,13 @@ void StartUserTasks(void);
 ///////////////////////////////////////////////////////////////////////////////
 // StartUserTasks
 //
-// Creates the application's user task. The task runs independently from the
-// Arduino loop() function under the control of the FreeRTOS scheduler.
+// Maakt de applicatietaken aan. Deze taken draaien onafhankelijk van de
+// Arduino-functie loop(), onder besturing van de FreeRTOS-scheduler.
 //
-// configMINIMAL_STACK_SIZE is sufficient for this small task because it only
-// uses a DIO object, a few integer variables, and the output functions. The
-// priority is deliberately kept low so system and console tasks can continue
-// to run when they need processor time.
+// De stackgrootte is gebaseerd op configMINIMAL_STACK_SIZE; dat is voldoende
+// voor een kleine taak met een paar lokale variabelen en tekstuitvoer. Vergroot
+// de stack (bijvoorbeeld * 2) als een taak meer doet. De prioriteit is bewust
+// laag gehouden, zodat systeem- en consoletaken processortijd blijven krijgen.
 
 void StartUserTasks(void)
 {
@@ -64,11 +65,11 @@ void StartUserTasks(void)
 	result = xTaskCreate(TaskInterruptHandler, "tsk_IH", (configMINIMAL_STACK_SIZE), NULL, priority, &handle_TaskInterruptHandler);
 	if (result == pdPASS )
 	{
-		// The task was created successfully. The scheduler will call UserTask
-		// when the task receives processor time.
+		// De taak is succesvol aangemaakt. De scheduler roept TaskInterruptHandler aan
+		// zodra de taak processortijd krijgt.
 	}
-	// When creation fails, the task handle remains NULL. There is currently no
-	// recovery action here, so the application continues without UserTask.
+	// Als het aanmaken mislukt, blijft de task-handle NULL. Er is hier geen
+	// herstelactie, dus de applicatie draait verder zonder TaskInterruptHandler.
 }
 
 // TODO: declareer variabele g_InterruptCount met beginwaarde 0
@@ -76,7 +77,7 @@ void StartUserTasks(void)
 // TODO: declareer semafoorhandle handle_InterruptSemaphore met beginwaarde NULL
 
 ///////////////////////////////////////////////////////////////////////////////
-// void interruptHandler(uint32_t id, uint32_t mask)
+// void interruptHandler(void)
 //
 // Dit is de Interrupt Service Routine (ISR) - maak deze zo kort mogelijk!
 //
@@ -84,22 +85,30 @@ void StartUserTasks(void)
 // Deze functie wordt NIET aangeroepen vanuit het programma, maar wordt
 // door de CPU "aangeroepen" op het moment dat er een interrupt optreedt.
 // Deze functie wordt gekoppeld aan een interruptbron m.b.v. de functie
-// interrupt_AttachHandler
+// attachInterrupt()
 // ***********************************************************************
 
-void interruptHandler(uint32_t id, uint32_t mask)
+#define BUTTON_0	4 // alleen button 0 wordt gebruikt en is rechtstreeks op de esp32 aangesloten, de andere buttons zijn via een I2C expander aangesloten en worden niet gebruikt
+
+// De ESP32 Arduino-core roept een GPIO-interrupthandler aan zonder argumenten.
+// IRAM_ATTR zorgt dat de ISR in het interne RAM staat, zodat hij altijd snel
+// uitgevoerd kan worden.
+void IRAM_ATTR interruptHandler(void)
 {
-	// de parameters id en mask worden niet gebruikt
-	
+	BaseType_t higherPriorityTaskWoken = pdFALSE;
+
 	// TODO: volgende deel afmaken:
 	
 	/*
 	if (<je eigen semafoor handle> != NULL)
 	{
 		// TODO: verhoog interrupt count
-		// TODO: deblokkeer TaskInterruptHandler met semafoor
+		// TODO: deblokkeer TaskInterruptHandler met semafoor,
+		//       gebruik xSemaphoreGiveFromISR(..., &higherPriorityTaskWoken)
 	}
 	*/
+
+	portYIELD_FROM_ISR(higherPriorityTaskWoken);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,15 +120,15 @@ void TaskInterruptHandler(void *pvParameters)
 {
 	ts_printf("> Task InterruptHandler started\n");
 	
-	// TODO: attach interrupt handler voor drukknoppen:
-	//		juiste pins
-	//		juiste edge
-	// Gebruik de functie interrupt_AttachHandler
+	// TODO: maak counting semafoor met juiste beginwaarden. Doe dit vóór het
+	//       koppelen van de interrupt, zodat de ISR de semafoor direct kan gebruiken.
 	
-	// TODO: enable CPU interrupts
-	// gebruik de functie interrupt_Enable
-	
-	// TODO: maak counting semafoor met juiste beginwaarden
+	// TODO: koppel de interrupthandler aan drukknop BUTTON_0 (GPIO4):
+	//		juiste pin en pinMode (INPUT_PULLUP)
+	//		juiste flank (de knop trekt de pin naar massa)
+	// Gebruik pinMode() en attachInterrupt(); attachInterrupt() zet de interrupt
+	// ook meteen aan. De andere knoppen zitten via een I2C-expander en worden
+	// hier niet gebruikt.
 	
 	while (true)
 	{
@@ -130,43 +139,7 @@ void TaskInterruptHandler(void *pvParameters)
 		// TODO: laat waarde zien van globale variabele die de interrupts telt
 	}
 	
-	// we never get here!
-	vTaskDelete(NULL);
-}
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// UserTask
-//
-// Initializes the digital I/O abstraction and repeatedly toggles one output
-// bit. The connected LED therefore changes state on every cycle, providing a
-// simple visual indication that the task is alive and being scheduled.
-//
-// pvParameters is part of the standard FreeRTOS task signature. This task does
-// not currently require parameters, so it is intentionally unused.
-
-void UserTask(void *pvParameters)
-{
-	dio_device dio;
-	// Initialize the DIO hardware before accessing the digital output, LED's are connected to it.
-	dio.Init();
-
-	// Report that the task has started. This message uses the normal output
-	// function and is therefore independent of the DEBUG build switch.
-	ts_printf("> UserTask started\n");
-
-
-	
-	while (true)
-	{
-
-	}
-	
-	// The loop is intentionally infinite, so this line is normally unreachable.
-	// It remains as the correct cleanup operation if the loop is later changed
-	// to terminate or the task receives an explicit exit condition.
+	// hier komen we nooit!
 	vTaskDelete(NULL);
 }
 
@@ -175,32 +148,32 @@ void UserTask(void *pvParameters)
 ///////////////////////////////////////////////////////////////////////////////
 // setup
 //
-// Arduino calls setup() once during boot. The initialization order is
-// important: serial output is configured first, followed by the shared output
-// task, the heartbeat, system-information commands, the user task, and finally
-// the command console. The short delays give each subsystem time to finish its
-// startup before the next subsystem begins using it.
+// Arduino roept setup() één keer aan tijdens het opstarten. De volgorde is
+// belangrijk: eerst de seriële uitvoer, daarna de gedeelde uitvoertaak
+// (ts_printf), de heartbeat, de systeeminformatie-commando's, de
+// applicatietaken en tot slot de commandoconsole. De korte vertragingen geven
+// elk subsysteem tijd om op te starten voordat het volgende het gebruikt.
 
 void setup (void)
 {
 	Serial.begin(115200);
 	delay(1000);
 	Serial.println("System initializing");
-	// Start the task used by ts_printf and ts_debug for serialized output.
+	// Start de taak die ts_printf en ts_debug gebruiken voor geserialiseerde uitvoer.
 	StartTsPrintfTask(NULL);
 
-	// Blink the board LED as a heartbeat so the system's main activity can be
-	// observed independently from the LED controlled by UserTask.
+	// Laat de LED op het ESP32-board knipperen als heartbeat, zodat los van de
+	// applicatietaken zichtbaar is dat het systeem draait.
 	StartHeartbeatTask(LED_PIN_ESP32_BOARD);
 	delay(500);
-	// Add commands that expose system information through the console.
+	// Voeg commando's toe die systeeminformatie via de console beschikbaar maken.
 	RegisterSystemInfoCommands();
 	delay(500);
 
-	// Start the application task that controls the DIO output.
+	// Start de applicatietaken.
 	StartUserTasks();
 	
-	// Start the interactive command console after the shared services exist.
+	// Start de interactieve commandoconsole nu de gedeelde services bestaan.
 	StartCommandConsoleTask(NULL);
 
 	delay(500);
@@ -208,7 +181,7 @@ void setup (void)
 
 void loop(void)
 {
-	// Application work is performed by FreeRTOS tasks. Arduino still calls
-	// loop(), so it uses a delay to yield CPU time instead of busy-spinning.
+	// Het eigenlijke werk gebeurt in FreeRTOS-taken. Arduino roept loop() nog
+	// steeds aan; de delay geeft de CPU vrij in plaats van actief te wachten.
   delay(500);
 }
